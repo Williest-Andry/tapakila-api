@@ -12,23 +12,33 @@ app.get('/', (req, res) => {
 });
 
 app.get('/events', async (req, res) => {
-  try {
-    const result = await pool.query("SELECT * FROM event");
+  const { title } = req.query;
 
-    const events= result.rows.map((event) => ({
+  try {
+    let query = "SELECT * FROM event";
+    let queryParams = [];
+
+    if (title) {
+      query += " WHERE title ILIKE $1";
+      queryParams.push(`%${title}%`);
+    }
+
+    const result = await pool.query(query, queryParams);
+
+    const events = result.rows.map((event) => ({
       id: event.id,
-      image: "assets/events_image/"+event.image,
+      image: "assets/events_image/" + event.image,
       title: event.title,
       dateTime: dayjs(event.date_time).format("YYYY-MM-DD HH:mm:ss"),
       location: event.location,
       isAvailable: Boolean(event.is_available),
       category: event.category,
     }));
-    
+
     res.json(events);
   } catch (err) {
     console.log(err.message);
-    res.status(500).send("Erreur serveur");   
+    res.status(500).send("Erreur serveur");
   }
 });
 
