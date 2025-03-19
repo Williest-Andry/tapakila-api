@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import pool from "./db.js";
 import dayjs from "dayjs";
+import user from "./routes/user.js";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use('/users', user);
 
 app.get('/', (req, res) => {
     res.json("Hello World");
