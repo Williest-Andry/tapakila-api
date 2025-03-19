@@ -357,7 +357,7 @@ app.get("/events/:eventId/reservations", async (req, res) => {
 // USERS /!\
 
 // get all users
-app.get("/users", async (req, res) => {
+/*app.get("/users", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM user_account");
     res.json(result.rows);
@@ -455,7 +455,7 @@ app.get("/users/email/:email", async (req, res) => {
     console.log(err.message);
     res.status(500).send("Erreur serveur");
   }
-});
+});*/
 
 
 const port = 3001;
