@@ -29,6 +29,8 @@ app.get('/events', async (req, res) => {
       queryParams.push(`%${title}%`);
     }
 
+    query += " ORDER BY title ASC";
+
     const result = await pool.query(query, queryParams);
 
     const events = result.rows.map((event) => ({
@@ -458,6 +460,48 @@ app.get("/users/email/:email", async (req, res) => {
     res.status(500).send("Erreur serveur");
   }
 });*/
+
+
+// CATEGORY /!\
+// get all categories
+app.get("/categories", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT DISTINCT category FROM event ORDER BY category ASC");
+
+    const categoryList = result.rows.map(({ category }) => ({
+      label: category,
+      value: category
+    }));
+
+    categoryList.unshift({ label: "All", value: "All" });
+
+    res.json(categoryList);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Erreur serveur");
+  }
+});
+
+
+// LOCATIONS /!\
+// get all locations
+app.get("/locations", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT DISTINCT location FROM event ORDER BY location ASC");
+
+    const locationList = result.rows.map(({ location }) => ({
+      label: location,
+      value: location
+    }));
+
+    locationList.unshift({ label: "All", value: "All" });
+
+    res.json(locationList);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Erreur serveur");
+  }
+});
 
 
 const port = 3001;
