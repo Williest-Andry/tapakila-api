@@ -2,9 +2,9 @@ import pool from "../db.js";
 
 export default class UserDAO {
     static async save(user) {
-        
-        if (!await this.findUser(user.email, user.password)){
-            console.log("ETO OO",user);
+        if (!await this.findUser(user.email, user.getPassword())) {
+            console.log("ato le izy", user);
+
             const query = `
             INSERT INTO "user" (username, email, password, status) 
             VALUES ($1, $2, $3, $4) 
@@ -13,10 +13,10 @@ export default class UserDAO {
             const values = [user.username, user.email, user.getPassword(), user.getStatus()];
             const result = await pool.query(query, values);
             return result.rows[0];
-        };
-        
-        const query = `UPDATE "user" SET authToken=$1 WHERE email=$2;`;
-        const result = await pool.query(query, [user.authToken, user.email]);
+        }
+
+        const query = `UPDATE "user" SET authToken=$1 WHERE id=$2;`;
+        const result = await pool.query(query, [user.getAuthToken(), user.getId()]);
         return result.rows[0];
     }
 

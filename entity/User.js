@@ -38,6 +38,10 @@ export default class User {
         return this.#password;
     }
 
+    getAuthToken() {
+        return this.#authToken;
+    }
+
     toString(){
         return {
             id: this.#id,

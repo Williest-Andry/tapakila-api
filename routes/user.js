@@ -34,13 +34,15 @@ user.post('/login', async (req, res) => {
         if (!verifiedUser) {
             return res.status(404).send("Cet utilisateur n'existe pas");
         }
+        
         const user = new User(
             verifiedUser.username,
             verifiedUser.email,
             verifiedUser.password,
-            verifiedUser.status
         );
         user.setId(verifiedUser.id);
+        user.setStatus(verifiedUser.status);
+    
         const authToken = user.generateAuthToken();
         await UserDAO.save(user);
         return res.send({ user });
