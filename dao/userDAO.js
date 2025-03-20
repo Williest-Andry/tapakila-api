@@ -33,12 +33,15 @@ export default class UserDAO {
     }
 
     static async findUserById(id) {
+        if (isNaN(id)) {
+            throw new Error("L'ID doit être un entier valide !");
+        }
         const query = `SELECT * FROM "user" WHERE id=$1;`;
         const result = await pool.query(query, [id]);
         return result.rows[0];
     }
 
-    static async findUserByIdAndToken(id, authToken){
+    static async findUserByIdAndToken(id, authToken) {
         const query = `SELECT * FROM "user" WHERE id=$1 AND authToken=$2;`
         const result = await pool.query(query, [id, authToken]);
         return result.rows[0];
