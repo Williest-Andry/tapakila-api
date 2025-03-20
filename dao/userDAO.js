@@ -37,4 +37,10 @@ export default class UserDAO {
         const result = await pool.query(query, [id]);
         return result.rows[0];
     }
+
+    static async findUserByIdAndToken(id, authToken){
+        const query = `SELECT * FROM "user" WHERE id=$1 AND authToken=$2;`
+        const result = await pool.query(query, [id, authToken]);
+        return result.rows[0];
+    }
 }
