@@ -14,8 +14,8 @@ export default class User {
 
     async generateAuthToken() {
         const generatedAuthToken = jwt.sign({ id: this.#id, email: this.email, password: this.#password }, 'secret');
-        this.authToken = generatedAuthToken;
-        return this.authToken;
+        this.#authToken = generatedAuthToken;
+        return this.#authToken;
     }
 
     setId(id) {
@@ -24,6 +24,10 @@ export default class User {
 
     setStatus(status){
         return this.#status = status;
+    }
+
+    setAuthToken(authToken){
+        return this.#authToken = authToken;
     }
 
     getId(){

@@ -8,7 +8,7 @@ const user = express.Router();
 user.get('/', authentification, async (req, res) => {
     try {
         const users = await UserDAO.findAllUsers();
-        if(!users){
+        if (!users) {
             return res.status(404).send("La liste d'utilisateur n'est pas disponible")
         }
         res.send(users);
@@ -18,16 +18,20 @@ user.get('/', authentification, async (req, res) => {
     }
 })
 
-user.get('/:id', authentification,async (req, res) => {
+user.get('/myprofile', authentification, async (req, res) => {
+    res.send(req.user);
+})
+
+user.get('/:id', authentification, async (req, res) => {
     try {
-        const user = await UserDAO.findUserById(req.params.id);
-        if(!user){
+        const user = await UserDAO.findUserById(parseInt(req.params.id));
+        if (!user) {
             return res.status(404).send("Cet utilisateur n'existe pas")
         }
         res.send(user);
     }
     catch (e) {
-        res.status(404).send(e);
+        res.status(404).send("haha");
     }
 })
 
@@ -41,7 +45,7 @@ user.post('/login', async (req, res) => {
         if (!verifiedUser) {
             return res.status(404).send("Cet utilisateur n'existe pas");
         }
-        
+
         const user = new User(
             verifiedUser.username,
             verifiedUser.email,
@@ -49,13 +53,33 @@ user.post('/login', async (req, res) => {
         );
         user.setId(verifiedUser.id);
         user.setStatus(verifiedUser.status);
-    
+
+
         const authToken = user.generateAuthToken();
         await UserDAO.save(user);
-        return res.send({ user });
+        const finalUser = user.toString()
+        return res.send({ finalUser });
     }
     catch (e) {
         return res.status(400).send(e);
+    }
+})
+
+user.post('/logout', authentification, async (req, res) => {
+    try {
+        const user = new User(
+            req.user.username,
+            req.user.email,
+            req.user.password
+        );
+        user.setId(req.user.id);
+        user.setAuthToken(null);
+
+        await UserDAO.save(user);
+        res.send(user)
+    }
+    catch (e) {
+        res.status(500).send(e);
     }
 })
 
@@ -66,7 +90,7 @@ user.post('/', async (req, res) => {
         req.body.password
     );
     sentUser.setStatus('user');
-    
+
     try {
         if (await UserDAO.findUser(req.body.email, req.body.password)) {
             return res.send("L'email : " + req.body.email + " et/ou le nom : " + req.body.username + " est déjà liée à un compte");
@@ -76,18 +100,26 @@ user.post('/', async (req, res) => {
 
         const createdUser = new User(
             userObject.username,
-            userObject.email, 
+            userObject.email,
             userObject.password
         );
         createdUser.setId(userObject.id);
         createdUser.setStatus(userObject.status);
-        
+
         const authToken = createdUser.generateAuthToken();
-        return res.status(201).send({ createdUser});
+        return res.status(201).send({ createdUser });
     }
     catch (e) {
         return res.status(400).send(e);
     }
+})
+
+user.put('/:id', authentification, async(req, res) => {
+    
+})
+
+user.delete('/:id', authentification, async(req, res) => {
+
 })
 
 export default user;
