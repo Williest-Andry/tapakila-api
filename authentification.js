@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import UserDAO from './dao/userDAO.js';
 
 export default async function authentification (req, res, next) {
+    
     try{
         const authToken = req.header('Authorization').replace('Bearer ','');
         const decodedToken = jwt.verify(authToken, 'secret');
@@ -15,7 +16,6 @@ export default async function authentification (req, res, next) {
         next();
     }
     catch(e){
-        
         res.status(401).send("Veuillez vous authentifier!")
     }
 }

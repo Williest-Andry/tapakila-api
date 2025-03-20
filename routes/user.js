@@ -36,7 +36,7 @@ user.post('/login', async (req, res) => {
     const password = await req.body.password;
 
     try {
-        const verifiedUser = await UserDAO.findUser(email, password);
+        const verifiedUser = await UserDAO.findUser(email, password);    
 
         if (!verifiedUser) {
             return res.status(404).send("Cet utilisateur n'existe pas");
@@ -49,13 +49,33 @@ user.post('/login', async (req, res) => {
         );
         user.setId(verifiedUser.id);
         user.setStatus(verifiedUser.status);
-    
+        
+        
         const authToken = user.generateAuthToken();
         await UserDAO.save(user);
-        return res.send({ user });
+        const finalUser = user.toString()
+        return res.send({ finalUser });
     }
     catch (e) {
         return res.status(400).send(e);
+    }
+})
+
+user.post('/logout', authentification, async (req, res) => {
+    try{
+        const user = new User(
+            req.user.username,
+            req.user.email,
+            req.user.password
+        );
+        user.setId(req.user.id);
+        user.setAuthToken(null);
+
+        await UserDAO.save(user);
+        res.send(user)
+    }
+    catch(e){
+        res.status(500).send(e);
     }
 })
 
