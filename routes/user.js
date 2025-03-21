@@ -9,6 +9,14 @@ user.get('/myprofile', authentification, async (req, res) => {
     res.send(req.user);
 });
 
+user.put('/myprofile', authentification, async(req, res) => {
+    
+});
+
+user.delete('/myprofile', authentification, async(req, res) => {
+
+});
+
 // [IMPORTANT] For admin(ReactAdmin)
 user.get('/', authentification, async (req, res) => {
     try {
@@ -158,12 +166,15 @@ user.post('/logout', authentification, async (req, res) => {
     }
 });
 
+// [IMPORTANT] For admin(ReactAdmin)
 user.put('/:id', authentification, async(req, res) => {
     
 });
 
+// [IMPORTANT] For admin(ReactAdmin)
 user.delete('/:id', authentification, async(req, res) => {
 
 });
+
 
 export default user;
