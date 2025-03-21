@@ -3,15 +3,14 @@ import pool from "../db.js";
 export default class UserDAO {
     static async save(user) {
         if (!await this.findUser(user.email, user.getPassword())) {
-            console.log("ato le izy", user);
-
             const query = `
-            INSERT INTO "user" (username, email, password, status) 
-            VALUES ($1, $2, $3, $4) 
+            INSERT INTO "user" (username, email, password, status, authtoken) 
+            VALUES ($1, $2, $3, $4, $5) 
             RETURNING *;
             `;
-            const values = [user.username, user.email, user.getPassword(), user.getStatus()];
+            const values = [user.username, user.email, user.getPassword(), user.getStatus(), user.getAuthToken()];
             const result = await pool.query(query, values);
+            
             return result.rows[0];
         }
 
@@ -42,8 +41,8 @@ export default class UserDAO {
     }
 
     static async findUserByIdAndToken(id, authToken) {
-        const query = `SELECT * FROM "user" WHERE id=$1 AND authToken=$2;`
-        const result = await pool.query(query, [id, authToken]);
+        const query = `SELECT * FROM "user" WHERE id=$1 AND authToken='${authToken}';`;
+        const result = await pool.query(query, [id]);
         return result.rows[0];
     }
 }
