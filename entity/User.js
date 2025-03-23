@@ -57,8 +57,3 @@ export default class User {
         }
     }
 }
-
-// const test = new User("test", "test@gmail.com", "aljsdlfalksdfk");
-// console.log("ito le izy",test.toString());
-// console.log(test.password);
-

@@ -17,7 +17,6 @@ user.put('/myprofile', authentification, async(req, res) => {
             req.body.password? req.body.password : req.user.password
         );
         updatedUser.setId(req.user.id);
-        console.log("ato");
         await UserDAO.updateUser(updatedUser);
         const finalCreatedUser = updatedUser.toString();
         return res.send(finalCreatedUser);
@@ -28,7 +27,13 @@ user.put('/myprofile', authentification, async(req, res) => {
 });
 
 user.delete('/myprofile', authentification, async(req, res) => {
-
+    try{
+        await UserDAO.deleteById(req.user.id);
+        return res.send(req.user);
+    }
+    catch(e){
+        return res.status(400).send(e);
+    }
 });
 
 // [IMPORTANT] For admin(ReactAdmin)
@@ -210,7 +215,16 @@ user.put('/:id', authentification, async(req, res) => {
 
 // [IMPORTANT] For admin(ReactAdmin)
 user.delete('/:id', authentification, async(req, res) => {
-
+    try{
+        if(!await UserDAO.findUserById(req.params.id)){
+            throw new Error();
+        }
+        const deletedUser = await UserDAO.deleteById(req.params.id);
+        return res.send(deletedUser);
+    }
+    catch(e){
+        return res.status(400).send(e);
+    }
 });
 
 
