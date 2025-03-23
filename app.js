@@ -9,8 +9,20 @@ app.use(express.json());
 app.use(cors());
 app.use('/users', user);
 
-app.get('/', (req, res) => {
-    res.json("Hello World");
+app.get('/', async (req, res) => {
+  try {
+    const result = await pool.query("SELECT public.update_past_events()");
+
+    if (result){
+      res.json({ message: "Les événements passés ont été mis à jour" });
+    } else {
+      res.status(404).json({ message: "Erreur lors de la mise à jour des événements passés" });
+    }
+
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send("Erreur serveur");
+  }
 });
 
 
@@ -352,10 +364,35 @@ app.delete("/reservations/:id", async (req, res) => {
 
 // get reservations by user id
 app.get("/users/:userId/reservations", async (req, res) => {
+  const { title } = req.query;
+
   try {
     const { userId } = req.params;
-    const result = await pool.query("SELECT * FROM reservation WHERE user_id = $1", [userId]);
-    res.json(result.rows);
+
+    const query = "SELECT r.id, r.id_user, r.id_ticket, e.title AS event_title, e.date_time AS event_date_time, e.location AS event_location, t.type AS ticket_type, r.quantity, r.date_time AS reservation_date_time FROM reservation r JOIN ticket t ON r.id_ticket = t.id JOIN event e ON t.id_event = e.id WHERE r.id_user = $1";
+    let queryParams = [];
+    queryParams.push(userId);
+
+    if (title) {
+      query += " AND e.title ILIKE $2";
+      queryParams.push(`%${title}%`);
+    }
+    
+    const result = await pool.query(query, queryParams);
+
+    const reservations = result.rows.map((reservation) => ({
+      id: reservation.id,
+      idUser: reservation.id_user,
+      id_ticket: reservation.id_ticket,
+      eventTitle: reservation.event_title,
+      eventDateTime: dayjs(reservation.event_date_time).format("YYYY-MM-DD HH:mm:ss"),
+      eventLocation: reservation.event_location,
+      ticketType: reservation.ticket_type,
+      quantity: reservation.quantity,
+      reservationDateTime: dayjs(reservation.reservation_date_time).format("YYYY-MM-DD HH:mm:ss"),
+    }));
+
+    res.json(reservations);
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Erreur serveur");
