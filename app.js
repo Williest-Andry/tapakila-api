@@ -39,8 +39,8 @@ app.get('/events', async (req, res) => {
       title: event.title,
       dateTime: dayjs(event.date_time).format("YYYY-MM-DD HH:mm:ss"),
       location: event.location,
-      isAvailable: Boolean(event.is_available),
       category: event.category,
+      availablePlace: event.available_place,
     }));
 
     res.json(events);
@@ -68,8 +68,8 @@ app.get("/events/:id", async (req, res) => {
       title: event.title,
       dateTime: dayjs(event.date_time).format("YYYY-MM-DD HH:mm:ss"),
       location: event.location,
-      isAvailable: Boolean(event.is_available),
       category: event.category,
+      availablePlace: event.available_place,
     };
 
     res.json(formattedEvent);
@@ -82,11 +82,11 @@ app.get("/events/:id", async (req, res) => {
 // add event
 app.post("/events", async (req, res) => {
   try {
-    const { id, image, title, dateTime, location, isAvailable, category } = req.body;
+    const { id, image, title, dateTime, location, category, availablePlace } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO event (id, image, title, date_time, location, is_available, category) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
-      [id, image, title, dateTime, location, isAvailable, category]
+      "INSERT INTO event (id, image, title, date_time, location, category, available_place) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+      [id, image, title, dateTime, location, category, availablePlace]
     );
 
     res.json(result.rows[0]);
@@ -100,11 +100,11 @@ app.post("/events", async (req, res) => {
 app.put("/events/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { image, title, dateTime, location, isAvailable, category } = req.body;
+    const { image, title, dateTime, location, category, availablePlace } = req.body;
 
     const result = await pool.query(
-      "UPDATE event SET image = $1, title = $2, date_time = $3, location = $4, is_available = $5, category = $6 WHERE id = $7 RETURNING *",
-      [image, title, dateTime, location, isAvailable, category, id]
+      "UPDATE event SET image = $1, title = $2, date_time = $3, location = $4, category = $5, available_place = $6 WHERE id = $7 RETURNING *",
+      [image, title, dateTime, location, category, availablePlace, id]
     );
 
     if (result.rows.length === 0) {
@@ -142,7 +142,16 @@ app.delete("/events/:id", async (req, res) => {
 app.get("/tickets", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM ticket");
-    res.json(result.rows);
+
+    const tickets = result.rows.map((ticket) => ({
+      id: ticket.id,
+      idEvent: ticket.id_event,
+      price: ticket.price,
+      availableQuantity: ticket.available_quantity,
+      type: ticket.type,
+    }));
+
+    res.json(tickets);
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Erreur serveur");
@@ -155,11 +164,21 @@ app.get("/tickets/:id", async (req, res) => {
     const { id } = req.params;
     const result = await pool.query("SELECT * FROM ticket WHERE id = $1", [id]);
 
+    const ticket = result.rows[0];
+
+    const formattedTicket = {
+      id: ticket.id,
+      idEvent: ticket.id_event,
+      price: ticket.price,
+      availableQuantity: ticket.available_quantity,
+      type: ticket.type,
+    };
+
     if (result.rows.length === 0) {
       return res.status(404).json({ message: "Billet non trouvé" });
     }
 
-    res.json(result.rows[0]);
+    res.json(formattedTicket);
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Erreur serveur");
@@ -169,11 +188,11 @@ app.get("/tickets/:id", async (req, res) => {
 // add ticket
 app.post("/tickets", async (req, res) => {
   try {
-    const { id, eventId, userId, price, quantity } = req.body;
+    const { id, idEvent, price, availableQuantity, type } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO ticket (id, event_id, user_id, price, quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [id, eventId, userId, price, quantity]
+      "INSERT INTO ticket (id, id_event, price, available_quantity, type) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [id, idEvent, price, availableQuantity, type]
     );
 
     res.json(result.rows[0]);
@@ -187,11 +206,11 @@ app.post("/tickets", async (req, res) => {
 app.put("/tickets/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { eventId, userId, price, quantity } = req.body;
+    const { idEvent, price, availableQuantity, type } = req.body;
 
     const result = await pool.query(
-      "UPDATE ticket SET event_id = $1, user_id = $2, price = $3, quantity = $4 WHERE id = $5 RETURNING *",
-      [eventId, userId, price, quantity, id]
+      "UPDATE ticket SET event_id = $1, price = $2, available_quantity = $3, type = $4 WHERE id = $5 RETURNING *",
+      [idEvent, price, availableQuantity, type, id]
     );
 
     if (result.rows.length === 0) {
@@ -227,24 +246,22 @@ app.get("/events/:eventId/tickets", async (req, res) => {
   try {
     const { eventId } = req.params;
     const result = await pool.query("SELECT * FROM ticket WHERE event_id = $1", [eventId]);
-    res.json(result.rows);
+
+    const tickets = result.rows.map((ticket) => ({
+      id: ticket.id,
+      idEvent: ticket.id_event,
+      price: ticket.price,
+      availableQuantity: ticket.available_quantity,
+      type: ticket.type,
+    }));
+
+    res.json(tickets);
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Erreur serveur");
   }
 });
 
-// get tickets by user id
-app.get("/users/:userId/tickets", async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const result = await pool.query("SELECT * FROM ticket WHERE user_id = $1", [userId]);
-    res.json(result.rows);
-  } catch (err) {
-    console.log(err.message);
-    res.status(500).send("Erreur serveur");
-  }
-});
 
 
 // RESERVATIONS /!\
