@@ -10,7 +10,21 @@ user.get('/myprofile', authentification, async (req, res) => {
 });
 
 user.put('/myprofile', authentification, async(req, res) => {
-    
+    try{
+        const updatedUser = new User(
+            req.body.username?  req.body.username : req.user.username,
+            req.body.email? req.body.email : req.user.email,
+            req.body.password? req.body.password : req.user.password
+        );
+        updatedUser.setId(req.user.id);
+        console.log("ato");
+        await UserDAO.updateUser(updatedUser);
+        const finalCreatedUser = updatedUser.toString();
+        return res.send(finalCreatedUser);
+    }
+    catch(e){
+        return res.status(400).send(e);
+    }
 });
 
 user.delete('/myprofile', authentification, async(req, res) => {
@@ -168,7 +182,30 @@ user.post('/logout', authentification, async (req, res) => {
 
 // [IMPORTANT] For admin(ReactAdmin)
 user.put('/:id', authentification, async(req, res) => {
-    
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+
+    try{
+        if(req.user.status != 'admin'){
+            return res.status(401).send("Route réservée aux admins!");
+        }
+        const foundUser = await UserDAO.findUserById(req.params.id);
+        if(!foundUser){
+            throw new Error();
+        }
+        if(username==null || email ==null || password==null){
+            throw new Error();
+        }
+        const updatedUser = new User(username,email,password);
+        updatedUser.setId(foundUser.id);
+        await UserDAO.updateUser(updatedUser);
+        const finalCreatedUser = updatedUser.toString();
+        return res.send(finalCreatedUser);
+    }
+    catch(e){
+        return res.status(400).send(e);
+    }
 });
 
 // [IMPORTANT] For admin(ReactAdmin)
