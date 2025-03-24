@@ -57,3 +57,39 @@ export default class User {
         }
     }
 }
+
+
+// Suggestion d'une amelioration de la classe User (fourni par chatgpt)
+/*
+import jwt from "jsonwebtoken";
+import { randomUUID } from "crypto";
+
+class User {
+    #id;
+    #password;
+    #status;
+    #authToken;
+
+    constructor(username, email, password) {
+        this.username = username;
+        this.email = email;
+        this.#password = password;
+        this.#id = randomUUID(); // Générer un ID unique
+        this.#status = "active"; // Exemple de statut par défaut
+    }
+
+    getId() {
+        return this.#id;
+    }
+
+    getStatus() {
+        return this.#status;
+    }
+
+    async generateAuthToken() {
+        const payload = { id: this.#id, email: this.email };
+        this.#authToken = jwt.sign(payload, "secret", { expiresIn: "1h" }); // Durée limitée
+        return this.#authToken;
+    }
+}
+ */
