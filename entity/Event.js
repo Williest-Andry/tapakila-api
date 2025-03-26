@@ -1,5 +1,5 @@
 export default class Event {
-    constructor(id, image, title, dateTime, location, category, availablePlace, description, organizator){
+    constructor(id, image, title, dateTime, location, category, availablePlace, description, organizer){
         this.id = id;
         this.image = image;
         this.title = title;
@@ -8,6 +8,6 @@ export default class Event {
         this.category = category;
         this.availablePlace = availablePlace;
         this.description = description;
-        this.organizator = organizator;
+        this.organizer = organizer;
     }
 }

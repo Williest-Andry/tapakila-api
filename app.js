@@ -49,7 +49,7 @@ app.get('/events', async (req, res) => {
       category: event.category,
       availablePlace: event.available_place,
       description : event.description,
-      organizator: event.organizator,
+      organizer: event.organizer,
     }));
 
     res.json(events);
@@ -80,7 +80,7 @@ app.get("/events/:id", async (req, res) => {
       category: event.category,
       availablePlace: event.available_place,
       description : event.description,
-      organizator: event.organizator,
+      organizer: event.organizer,
     };
 
     res.json(formattedEvent);
@@ -93,11 +93,11 @@ app.get("/events/:id", async (req, res) => {
 // add event
 app.post("/events", async (req, res) => {
   try {
-    const { id, image, title, dateTime, location, category, availablePlace, description, organizator } = req.body;
+    const { id, image, title, dateTime, location, category, availablePlace, description, organizer } = req.body;
 
     const result = await pool.query(
       "INSERT INTO event (id, image, title, date_time, location, category, available_place) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
-      [id, image, title, dateTime, location, category, availablePlace, description, organizator]
+      [id, image, title, dateTime, location, category, availablePlace, description, organizer]
     );
 
     res.json(result.rows[0]);
@@ -111,11 +111,11 @@ app.post("/events", async (req, res) => {
 app.put("/events/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { image, title, dateTime, location, category, availablePlace, description, organizator } = req.body;
+    const { image, title, dateTime, location, category, availablePlace, description, organizer } = req.body;
 
     const result = await pool.query(
-      "UPDATE event SET image = $1, title = $2, date_time = $3, location = $4, category = $5, available_place = $6, description = $7, organizator = $8 WHERE id = $9 RETURNING *",
-      [image, title, dateTime, location, category, availablePlace, description, organizator, id]
+      "UPDATE event SET image = $1, title = $2, date_time = $3, location = $4, category = $5, available_place = $6, description = $7, organizer = $8 WHERE id = $9 RETURNING *",
+      [image, title, dateTime, location, category, availablePlace, description, organizer, id]
     );
 
     if (result.rows.length === 0) {
