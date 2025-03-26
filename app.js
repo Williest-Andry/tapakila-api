@@ -257,7 +257,7 @@ app.delete("/tickets/:id", async (req, res) => {
 app.get("/events/:eventId/tickets", async (req, res) => {
   try {
     const { eventId } = req.params;
-    const result = await pool.query("SELECT * FROM ticket WHERE event_id = $1", [eventId]);
+    const result = await pool.query("SELECT * FROM ticket WHERE id_event = $1", [eventId]);
 
     const tickets = result.rows.map((ticket) => ({
       id: ticket.id,
