@@ -1,4 +1,5 @@
 import pool from "../db.js";
+import Event from "../models/Event.js";
 
 export default class EventDAO {
 
@@ -14,42 +15,107 @@ export default class EventDAO {
         
         const result = await pool.query(query, [`%${searchTerm}%`]);
         
-        return result.rows;
+        return result.rows.map(row => new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.dateTime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        ));
     }
 
     static async getAllEvents() {
         const query = `SELECT * FROM "event"`;
         const result = await pool.query(query);
-        return result.rows;
+        
+        return result.rows.map(row => new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.datetime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        ));
     }
 
     static async getEventById(id) {
         const query = `SELECT * FROM "event" WHERE id = $1`;
         const result = await pool.query(query, [id]);
-        return result.rows[0];
+        
+        if (result.rows.length === 0) {
+            return null;
+        }
+        
+        const row = result.rows[0];
+        return new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.dateTime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        );
     }
 
-    static async createEvent({ title, description, date }) {
+    static async createEvent({ title, description, dateTime, image, location, category, availablePlace }) {
         const query = `
-            INSERT INTO "event" (title, description, date)
-            VALUES ($1, $2, $3) RETURNING *;
+            INSERT INTO "event" (title, description, dateTime, image, location, category, availablePlace)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const result = await pool.query(query, [title, description, date]);
-        return result.rows[0];
+        const result = await pool.query(query, [title, description, dateTime, image, location, category, availablePlace]);
+        
+        const row = result.rows[0];
+        return new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.dateTime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        );
     }
 
-    static async updateEvent(id, { title, description, date }) {
+    static async updateEvent(id, { title, description, dateTime, image, location, category, availablePlace }) {
         const query = `
-            UPDATE "event" SET title = $1, description = $2, date = $3
-            WHERE id = $4 RETURNING *;
+            UPDATE "event" SET title = $1, description = $2, dateTime = $3, image = $4, location = $5, category = $6, availablePlace = $7
+            WHERE id = $8 RETURNING *;
         `;
-        const result = await pool.query(query, [title, description, date, id]);
-        return result.rows[0];
+        const result = await pool.query(query, [title, description, dateTime, image, location, category, availablePlace, id]);
+        
+        const row = result.rows[0];
+        return new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.dateTime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        );
     }
 
     static async deleteEvent(id) {
         const query = `DELETE FROM "event" WHERE id = $1 RETURNING *;`;
         const result = await pool.query(query, [id]);
-        return result.rows[0];
+        
+        if (result.rows.length === 0) {
+            return null;
+        }
+
+        const row = result.rows[0];
+        return new Event(
+            row.id, 
+            row.image, 
+            row.title, 
+            row.dateTime, 
+            row.location, 
+            row.category, 
+            row.availablePlace
+        );
     }
 }
