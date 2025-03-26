@@ -9,15 +9,10 @@ app.use(express.json());
 app.use(cors());
 app.use('/users', user);
 
-app.get('/', async (req, res) => {
+app.get('/events/update', async (req, res) => {
   try {
-    const result = await pool.query("SELECT public.update_past_events()");
-
-    if (result){
-      res.json({ message: "Les événements passés ont été mis à jour" });
-    } else {
-      res.status(404).json({ message: "Erreur lors de la mise à jour des événements passés" });
-    }
+    await pool.query("SELECT public.update_past_events()");
+    res.json({ message: "Les événements passés ont été mis à jour" });
 
   } catch (err) {
     console.log(err.message);
