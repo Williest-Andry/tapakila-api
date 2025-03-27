@@ -6,7 +6,6 @@ import authentification from '../authentification.js';
 const user = express.Router();
 
 user.get('/myprofile', authentification, async (req, res) => {
-    console.log("eto le back");
     res.send(req.user);
 });
 
@@ -169,6 +168,7 @@ user.post('/login', async (req, res) => {
 });
 
 user.post('/logout', authentification, async (req, res) => {
+    console.log("eto le backy");
     try {
         const user = new User(
             req.user.username,
