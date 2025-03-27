@@ -4,7 +4,7 @@ export default class UserDAO {
     static async save(user) {
         if (!await this.findUser(user.email, user.getPassword())) {
             const query = `
-            INSERT INTO "user" (username, email, password, status, authtoken) 
+            INSERT INTO "user" (username, email, password, status, auth_token) 
             VALUES ($1, $2, $3, $4, $5) 
             RETURNING *;
             `;
@@ -14,7 +14,7 @@ export default class UserDAO {
             return result.rows[0];
         }
 
-        const query = `UPDATE "user" SET authToken=$1 WHERE id=$2;`;
+        const query = `UPDATE "user" SET auth_token=$1 WHERE id=$2;`;
         const result = await pool.query(query, [user.getAuthToken(), user.getId()]);
         return result.rows[0];
     }
@@ -51,7 +51,7 @@ export default class UserDAO {
     }
 
     static async findUserByIdAndToken(id, authToken) {
-        const query = `SELECT * FROM "user" WHERE id=$1 AND authToken='${authToken}';`;
+        const query = `SELECT * FROM "user" WHERE id=$1 AND auth_token='${authToken}';`;
         const result = await pool.query(query, [id]);
         return result.rows[0];
     }

@@ -6,6 +6,7 @@ import authentification from '../authentification.js';
 const user = express.Router();
 
 user.get('/myprofile', authentification, async (req, res) => {
+    console.log("eto le back");
     res.send(req.user);
 });
 
@@ -66,7 +67,7 @@ user.get('/:id', authentification, async (req, res) => {
         res.send(user);
     }
     catch (e) {
-        res.status(404).send("haha");
+        res.status(404).send(e);
     }
 });
 
@@ -145,7 +146,7 @@ user.post('/login', async (req, res) => {
         const verifiedUser = await UserDAO.findUser(email, password);
 
         if (!verifiedUser) {
-            return res.status(404).send("L'email et/ou le mot de passe est incorrect");
+            return res.status(404).send({message: "L'email et/ou le mot de passe est incorrect"});
         }
 
         const user = new User(
@@ -163,7 +164,7 @@ user.post('/login', async (req, res) => {
         return res.send({ finalUser });
     }
     catch (e) {
-        return res.status(400).send(e);
+        return res.status(400).send({error:e, message: "L'utilisateur n'existe pas" });
     }
 });
 
@@ -216,6 +217,9 @@ user.put('/:id', authentification, async(req, res) => {
 // [IMPORTANT] For admin(ReactAdmin)
 user.delete('/:id', authentification, async(req, res) => {
     try{
+        if(req.user.status != 'admin'){
+            return res.status(401).send("Route réservée aux admins!");
+        }
         if(!await UserDAO.findUserById(req.params.id)){
             throw new Error();
         }
