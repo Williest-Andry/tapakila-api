@@ -168,7 +168,6 @@ user.post('/login', async (req, res) => {
 });
 
 user.post('/logout', authentification, async (req, res) => {
-    console.log("eto le backy");
     try {
         const user = new User(
             req.user.username,
