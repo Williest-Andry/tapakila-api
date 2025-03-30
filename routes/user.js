@@ -126,7 +126,7 @@ user.post('/', async (req, res) => {
         );
         createdUser.setId(userObject.id);
         createdUser.setStatus(userObject.status);
-        const authToken = createdUser.generateAuthToken();
+        createdUser.generateAuthToken();
         
         await UserDAO.save(createdUser);
         const finalCreatedUser = createdUser.toString();
