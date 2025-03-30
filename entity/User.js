@@ -6,10 +6,14 @@ export default class User {
     #status;
     #authToken;
 
-    constructor(username, email, password) {
+    constructor(username, email, password, birthday, phone, country, city) {
         this.username = username;
         this.email = email;
         this.#password = password;
+        this.birthday = birthday;
+        this.phone = phone;
+        this.country = country;
+        this.city = city;
     }
 
     async generateAuthToken() {
@@ -51,9 +55,13 @@ export default class User {
             id: this.#id,
             username: this.username,
             email: this.email,
-            passoword: this.#password,
+            password: this.#password,
             status: this.#status,
-            authToken: this.#authToken
+            authToken: this.#authToken,
+            birthday: this.birthday,
+            phone: this.phone,
+            country: this.country,
+            city: this.city
         }
     }
 }

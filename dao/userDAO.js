@@ -4,11 +4,11 @@ export default class UserDAO {
     static async save(user) {
         if (!await this.findUser(user.email, user.getPassword())) {
             const query = `
-            INSERT INTO "user" (username, email, password, status, auth_token) 
-            VALUES ($1, $2, $3, $4, $5) 
+            INSERT INTO "user" (username, email, password, birthday, phone, country, city, status, auth_token) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *;
             `;
-            const values = [user.username, user.email, user.getPassword(), user.getStatus(), user.getAuthToken()];
+            const values = [user.username, user.email, user.getPassword(),user.birthday, user.phone, user.country, user.city, user.getStatus(), user.getAuthToken()];
             const result = await pool.query(query, values);
             
             return result.rows[0];
@@ -23,8 +23,8 @@ export default class UserDAO {
         if(!await this.findUserById(user.getId())){
             return this.save(user);
         }
-        const query = `UPDATE "user" SET username=$1, email=$2, password=$3 WHERE id=$4;`;
-        const values = [user.username, user.email, user.getPassword(), user.getId()];
+        const query = `UPDATE "user" SET username=$1, email=$2, password=$3, birthday=$4, phone=$5, country=$6, city=$7 WHERE id=$8;`;
+        const values = [user.username, user.email, user.getPassword(), user.birthday, user.phone, user.country, user.city, user.getId()];
         const result = await pool.query(query, values);
         return result.rows[0];
     }

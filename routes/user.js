@@ -14,7 +14,11 @@ user.put('/myprofile', authentification, async(req, res) => {
         const updatedUser = new User(
             req.body.username?  req.body.username : req.user.username,
             req.body.email? req.body.email : req.user.email,
-            req.body.password? req.body.password : req.user.password
+            req.body.password? req.body.password : req.user.password,
+            req.body.birthday? req.body.birthday : req.user.birthday,
+            req.body.phone? req.body.phone : req.user.phone,
+            req.body.country? req.body.country : req.user.country,
+            req.body.city? req.body.city : req.user.city
         );
         updatedUser.setId(req.user.id);
         await UserDAO.updateUser(updatedUser);
@@ -75,7 +79,11 @@ user.post('/admins', async (req, res) => {
     const sentUser = new User(
         req.body.username,
         req.body.email,
-        req.body.password
+        req.body.password,
+        req.body.birthday,
+        req.body.phone,
+        req.body.country,
+        req.body.city
     );
     sentUser.setStatus('admin');
 
@@ -89,11 +97,15 @@ user.post('/admins', async (req, res) => {
         const createdUser = new User(
             userObject.username,
             userObject.email,
-            userObject.password
+            userObject.password,
+            userObject.birthday,
+            userObject.phone,
+            userObject.country,
+            userObject.city
         );
         createdUser.setId(userObject.id);
         createdUser.setStatus(userObject.status);
-        const authToken = createdUser.generateAuthToken();
+        createdUser.generateAuthToken();
         
         await UserDAO.save(createdUser);
         const finalCreatedUser = createdUser.toString();
@@ -108,7 +120,11 @@ user.post('/', async (req, res) => {
     const sentUser = new User(
         req.body.username,
         req.body.email,
-        req.body.password
+        req.body.password,
+        req.body.birthday,
+        req.body.phone,
+        req.body.country,
+        req.body.city
     );
     sentUser.setStatus('user');
 
@@ -122,7 +138,11 @@ user.post('/', async (req, res) => {
         const createdUser = new User(
             userObject.username,
             userObject.email,
-            userObject.password
+            userObject.password,
+            userObject.birthday,
+            userObject.phone,
+            userObject.country,
+            userObject.city
         );
         createdUser.setId(userObject.id);
         createdUser.setStatus(userObject.status);
@@ -152,6 +172,10 @@ user.post('/login', async (req, res) => {
             verifiedUser.username,
             verifiedUser.email,
             verifiedUser.password,
+            verifiedUser.birthday,
+            verifiedUser.phone,
+            verifiedUser.country,
+            verifiedUser.city
         );
         user.setId(verifiedUser.id);
         user.setStatus(verifiedUser.status);
@@ -172,7 +196,11 @@ user.post('/logout', authentification, async (req, res) => {
         const user = new User(
             req.user.username,
             req.user.email,
-            req.user.password
+            req.user.password,
+            req.user.birthday,
+            req.user.phone,
+            req.user.country,
+            req.user.city
         );
         user.setId(req.user.id);
         user.setAuthToken(null);
@@ -187,9 +215,7 @@ user.post('/logout', authentification, async (req, res) => {
 
 // [IMPORTANT] For admin(ReactAdmin)
 user.put('/:id', authentification, async(req, res) => {
-    const username = req.body.username;
-    const email = req.body.email;
-    const password = req.body.password;
+    const sendUser = req.body;
 
     try{
         if(req.user.status != 'admin'){
@@ -199,10 +225,18 @@ user.put('/:id', authentification, async(req, res) => {
         if(!foundUser){
             throw new Error();
         }
-        if(username==null || email ==null || password==null){
+        if(Object.values(sendUser).some(prop => prop==null || prop=="")){
             throw new Error();
         }
-        const updatedUser = new User(username,email,password);
+        const updatedUser = new User(
+            sendUser.username,
+            sendUser.email,
+            sendUser.password,
+            sendUser.birthday,
+            sendUser.phone,
+            sendUser.country,
+            sendUser.city
+        );
         updatedUser.setId(foundUser.id);
         await UserDAO.updateUser(updatedUser);
         const finalCreatedUser = updatedUser.toString();
