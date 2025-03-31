@@ -382,7 +382,7 @@ app.get("/users/:userId/reservations", async (req, res) => {
     const reservations = result.rows.map((reservation) => ({
       id: reservation.id,
       idUser: reservation.id_user,
-      id_ticket: reservation.id_ticket,
+      idTicket: reservation.id_ticket,
       eventTitle: reservation.event_title,
       eventDateTime: dayjs(reservation.event_date_time).format("YYYY-MM-DD HH:mm:ss"),
       eventLocation: reservation.event_location,
