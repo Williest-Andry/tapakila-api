@@ -308,11 +308,11 @@ app.get("/reservations/:id", async (req, res) => {
 // add reservation
 app.post("/reservations", async (req, res) => {
   try {
-    const { id, userId, eventId, quantity, totalPrice } = req.body;
+    const { idUser, idTicket, quantity } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO reservation (id, user_id, event_id, quantity, total_price) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [id, userId, eventId, quantity, totalPrice]
+      "INSERT INTO reservation (date_time, id_user, id_ticket, quantity) VALUES (CURRENT_TIMESTAMP, $1, $2, $3) RETURNING *",
+      [ idUser, idTicket, quantity ]
     );
 
     res.json(result.rows[0]);
@@ -326,11 +326,11 @@ app.post("/reservations", async (req, res) => {
 app.put("/reservations/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { userId, eventId, quantity, totalPrice } = req.body;
+    const { idUser, idTicket, quantity } = req.body;
 
     const result = await pool.query(
-      "UPDATE reservation SET user_id = $1, event_id = $2, quantity = $3, total_price = $4 WHERE id = $5 RETURNING *",
-      [userId, eventId, quantity, totalPrice, id]
+      "UPDATE reservation SET user_id = $1, event_id = $2, quantity = $3 WHERE id = $4 RETURNING *",
+      [idUser, idTicket, quantity, id]
     );
 
     if (result.rows.length === 0) {
