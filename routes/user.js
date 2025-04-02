@@ -158,6 +158,8 @@ user.post('/', async (req, res) => {
 });
 
 user.post('/login', async (req, res) => {
+    console.log(req.body);
+    
     const email = await req.body.email;
     const password = await req.body.password;
 
