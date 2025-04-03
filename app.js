@@ -96,7 +96,7 @@ app.post("/events", async (req, res) => {
     const { id, image, title, dateTime, location, category, availablePlace, description, organizer } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO event (id, image, title, date_time, location, category, available_place) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
+      "INSERT INTO event (id, image, title, date_time, location, category, available_place, description, organizer) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
       [id, image, title, dateTime, location, category, availablePlace, description, organizer]
     );
 
@@ -199,11 +199,11 @@ app.get("/tickets/:id", async (req, res) => {
 // add ticket
 app.post("/tickets", async (req, res) => {
   try {
-    const { id, idEvent, price, availableQuantity, type } = req.body;
+    const { idEvent, price, availableQuantity, type } = req.body;
 
     const result = await pool.query(
-      "INSERT INTO ticket (id, id_event, price, available_quantity, type) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [id, idEvent, price, availableQuantity, type]
+      "INSERT INTO ticket ( id_event, price, available_quantity, type) VALUES ($1, $2, $3, $4) RETURNING *",
+      [idEvent, price, availableQuantity, type]
     );
 
     res.json(result.rows[0]);
