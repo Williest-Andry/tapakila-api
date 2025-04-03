@@ -41,15 +41,29 @@ user.delete('/myprofile', authentification, async(req, res) => {
 });
 
 // [IMPORTANT] For admin(ReactAdmin)
-user.get('/', authentification, async (req, res) => {
+user.get('/', async (req, res) => {
     try {
-        if(req.user.status != 'admin'){
-            return res.status(401).send("Route réservée aux admins!");
-        }
-        const users = await UserDAO.findAllUsers();
-        if (!users) {
+        const { order, page, perPage, sort } = req.query;
+
+        const result = await UserDAO.findAllUsers(order, page, perPage, sort);
+
+        if (!result) {
             return res.status(404).send("La liste d'utilisateur n'est pas disponible");
         }
+
+        const users = result.map((user) => ({
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            password: user.password,
+            birthday: user.birthday,
+            phone: user.phone,
+            country: user.country,
+            city: user.city,
+            status: user.status,
+            auth_token: user.auth_token
+          }));
+
         res.send(users);
     }
     catch (e) {

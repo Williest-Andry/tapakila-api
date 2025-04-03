@@ -25,7 +25,7 @@ app.get('/events/update', async (req, res) => {
 
 // get all events | filtered events
 app.get('/events', async (req, res) => {
-  const { title } = req.query;
+  const { title, order, page, perPage, sort } = req.query;
 
   try {
     let query = "SELECT * FROM event";
@@ -36,7 +36,18 @@ app.get('/events', async (req, res) => {
       queryParams.push(`%${title}%`);
     }
 
-    query += " ORDER BY title ASC";
+    if (order && sort) {
+      if (sort === 'availablePlace'){
+        query += ` ORDER BY available_place ${order}`
+      } else if (sort === 'dateTime') {
+        query += ` ORDER BY date_time ${order}`;
+      }
+      else query += ` ORDER BY ${sort} ${order}`;
+    }
+
+    if (page && perPage){
+      query += ` LIMIT ${perPage} OFFSET (${page} - 1) * ${perPage}`;
+    }
 
     const result = await pool.query(query, queryParams);
 
@@ -152,7 +163,24 @@ app.delete("/events/:id", async (req, res) => {
 // get all tickets
 app.get("/tickets", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM ticket");
+    const { order, page, perPage, sort } = req.query;
+
+    let query = "SELECT * FROM ticket"
+
+    if (order && sort) {
+      if (sort === 'idEvent'){
+        query += ` ORDER BY id_event ${order}`;
+      } else if (sort === 'availableQuantity'){
+        query += ` ORDER BY available_quantity ${order}`;
+      }
+      else query += ` ORDER BY ${sort} ${order}`;
+    }
+
+    if (page && perPage){
+      query += ` LIMIT ${perPage} OFFSET (${page} - 1) * ${perPage}`;
+    }
+
+    const result = await pool.query(query);
 
     const tickets = result.rows.map((ticket) => ({
       id: ticket.id,
@@ -280,8 +308,29 @@ app.get("/events/:eventId/tickets", async (req, res) => {
 // get all reservations
 app.get("/reservations", async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM reservation");
-    res.json(result.rows);
+    const { order, page, perPage, sort } = req.query;
+
+    let query = "SELECT * FROM reservation";
+
+    if (order && sort) {
+      query += ` ORDER BY ${sort} ${order}`;
+    }
+
+    if (page && perPage){
+      query += ` LIMIT ${perPage} OFFSET (${page} - 1) * ${perPage}`;
+    }
+
+    const result = await pool.query(query);
+
+    const reservations = result.rows.map((reservation) => ({
+      id: reservation.id,
+      date_time: reservation.date_time,
+      id_user: reservation.id_user,
+      id_ticket: reservation.id_ticket,
+      quantity: reservation.quantity,
+    }));
+
+    res.json(reservations);
   } catch (err) {
     console.log(err.message);
     res.status(500).send("Erreur serveur");

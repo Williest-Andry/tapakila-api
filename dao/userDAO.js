@@ -29,9 +29,19 @@ export default class UserDAO {
         return result.rows[0];
     }
 
-    static async findAllUsers() {
-        const query = `SELECT * FROM "user";`;
+    static async findAllUsers(order, page, perPage, sort) {
+        let query = `SELECT * FROM "user"`;
+
+        if (order && sort) {
+            query += ` ORDER BY ${sort} ${order}`;
+        }
+      
+        if (page && perPage){
+            query += ` LIMIT ${perPage} OFFSET (${page} - 1) * ${perPage}`;
+        }
+
         const result = await pool.query(query);
+        
         return result.rows;
     }
 
