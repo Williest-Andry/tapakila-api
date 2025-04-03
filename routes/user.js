@@ -253,16 +253,15 @@ user.post('/logout', authentification, async (req, res) => {
 // [IMPORTANT] For admin(ReactAdmin)
 user.put('/:id', authentification, async(req, res) => {
     const sendUser = req.body;
-
     try{
         if(req.user.status != 'admin'){
             return res.status(401).send("Route réservée aux admins!");
         }
-        const foundUser = await UserDAO.findUserById(req.params.id);
+        const foundUser = await UserDAO.findUserById(parseInt(req.params.id));
         if(!foundUser){
             throw new Error();
         }
-        if(Object.values(sendUser).some(prop => prop==null || prop=="")){
+        if(Object.values(sendUser).some(prop => prop=="")){
             throw new Error();
         }
         const updatedUser = new User(
