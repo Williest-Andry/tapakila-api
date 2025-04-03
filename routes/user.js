@@ -180,6 +180,7 @@ user.post('/login', async (req, res) => {
         user.setId(verifiedUser.id);
         user.setStatus(verifiedUser.status);
 
+        user.generateAuthToken();
         await UserDAO.save(user);
         const finalUser = user.toString()
         return res.send({ finalUser });
@@ -217,6 +218,7 @@ user.post('/login/admins', async (req, res) => {
         user.setId(verifiedUser.id);
         user.setStatus(verifiedUser.status);
 
+        user.generateAuthToken();
         await UserDAO.save(user);
         const finalUser = user.toString()
         return res.send({ finalUser });
