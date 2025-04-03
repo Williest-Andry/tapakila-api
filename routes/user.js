@@ -158,8 +158,6 @@ user.post('/', async (req, res) => {
 });
 
 user.post('/login', async (req, res) => {
-    console.log(req.body);
-    
     const email = await req.body.email;
     const password = await req.body.password;
 
@@ -168,6 +166,45 @@ user.post('/login', async (req, res) => {
 
         if (!verifiedUser) {
             return res.status(404).send({message: "L'email et/ou le mot de passe est incorrect"});
+        }
+
+        const user = new User(
+            verifiedUser.username,
+            verifiedUser.email,
+            verifiedUser.password,
+            verifiedUser.birthday,
+            verifiedUser.phone,
+            verifiedUser.country,
+            verifiedUser.city
+        );
+        user.setId(verifiedUser.id);
+        user.setStatus(verifiedUser.status);
+
+
+        const authToken = user.generateAuthToken();
+        await UserDAO.save(user);
+        const finalUser = user.toString()
+        return res.send({ finalUser });
+    }
+    catch (e) {
+        return res.status(400).send({error:e, message: "L'utilisateur n'existe pas" });
+    }
+});
+
+// [IMPORTANT] For admin(ReactAdmin)
+user.post('/login/admins', async (req, res) => {
+    const email = await req.body.email;
+    const password = await req.body.password;
+
+    try {
+        const verifiedUser = await UserDAO.findUser(email, password);
+
+        if (!verifiedUser) {
+            return res.status(404).send({message: "L'email et/ou le mot de passe est incorrect"});
+        }
+        
+        if(verifiedUser.status != 'admin'){
+            return res.status(401).send("Route réservée aux admins!");
         }
 
         const user = new User(
