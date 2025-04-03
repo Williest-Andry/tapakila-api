@@ -76,6 +76,7 @@ user.get('/:id', authentification, async (req, res) => {
 
 // [IMPORTANT] For admin(ReactAdmin)
 user.post('/admins', async (req, res) => {
+    
     const sentUser = new User(
         req.body.username,
         req.body.email,
@@ -85,7 +86,12 @@ user.post('/admins', async (req, res) => {
         req.body.country,
         req.body.city
     );
-    sentUser.setStatus('admin');
+    if(!req.body.status){
+        sentUser.setStatus('admin');
+    }
+    else{
+        sentUser.setStatus(req.body.status);
+    }
 
     try {
         if (await UserDAO.findUser(req.body.email, req.body.password)) {
