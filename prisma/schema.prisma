@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Get a free hosted Postgres database in seconds: `npx create-db`
-import "dotenv/config
+
+// import "dotenv/config";
 
 generator client {
   provider = "prisma-client"
@@ -31,56 +32,56 @@ enum ReservationStatus {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
+  id           String   @id @default(uuid())
+  email        String   @unique
   passwordHash String
   firstName    String
   lastName     String
-  role         UserRole      @default(USER)
-  createdAt    DateTime      @default(now())
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
 
-  events       Event[]      
-  reservations Reservation[]
+  events   Event[]
+  bookings Booking[]
 }
 
 model EventCategory {
-  id     String  @id @default(uuid())
-  name   String  @unique
-  slug   String  @unique
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
 
   events Event[]
 }
 
 model Event {
-  id String       @id @default(uuid())
-  title        String
-  description  String?
-  location     String
-  eventDate    DateTime
-  imageUrl     String?
-  status       EventStatus  @default(DRAFT)
-  createdAt    DateTime     @default(now())
+  id          String      @id @default(uuid())
+  title       String
+  description String?
+  location    String
+  eventDate   DateTime
+  imageUrl    String?
+  status      EventStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
 
-  categoryId   String
-  category     EventCategory     @relation(fields: [categoryId], references: [id])
+  categoryId String
+  category   EventCategory @relation(fields: [categoryId], references: [id])
 
-  organizerId  String
-  organizer    User         @relation(fields: [organizerId], references: [id])
+  organizerId String
+  organizer   User   @relation(fields: [organizerId], references: [id])
 
-  ticketTypes  TicketType[]
+  ticketTypes TicketType[]
 }
 
 model TicketType {
-  id             String            @id @default(uuid())
+  id             String  @id @default(uuid())
   name           String
-  price          Decimal           @db.Decimal(10, 2)
+  price          Decimal @db.Decimal(10, 2)
   totalSeats     Int
   availableSeats Int
-  maxPerUser     Int               @default(5)
-  isActive       Boolean           @default(true)
+  maxPerUser     Int     @default(5)
+  isActive       Boolean @default(true)
 
-  eventId        String
-  event          Event             @relation(fields: [eventId], references: [id])
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
 
   bookingItems BookingItem[]
 }
@@ -90,20 +91,20 @@ model Booking {
   status    ReservationStatus @default(CONFIRMED)
   createdAt DateTime          @default(now())
 
-  userId    String
-  user      User              @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  bookingitems     BookingItem[]
+  bookingitems BookingItem[]
 }
 
 model BookingItem {
-  id            String     @id @default(uuid())
-  quantity      Int
-  unitPrice     Decimal    @db.Decimal(10, 2)
+  id        String  @id @default(uuid())
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
 
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id])
 
-  ticketTypeId  String
-  ticketType    TicketType  @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
 }
