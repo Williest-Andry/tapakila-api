@@ -1,6 +1,6 @@
 import express from 'express';
 import UserDAO from '../dao/userDAO.js';
-import User from '../entity/User.js';
+import User from '../src/modules/user/user.entity.js';
 import authentification from '../authentification.js';
 
 const user = express.Router();
