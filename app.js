@@ -1,13 +1,17 @@
 import express from "express";
 import cors from "cors";
-import pool from "./db.js";
-import dayjs from "dayjs";
-import user from "./routes/user.js";
+import userRoutes from "./src/modules/user/user.route.js"
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use('/users', user);
+app.use('/users', userRoutes);
+
+
+
+
+import pool from "./db.js";
+import dayjs from "dayjs";
 
 app.get('/events/update', async (req, res) => {
   try {
@@ -500,10 +504,3 @@ app.get("/locations", async (req, res) => {
     res.status(500).send("Erreur serveur");
   }
 });
-
-
-const port = 3001;
-
-app.listen(port, () => {
-  console.log(`App listening on port http://localhost:${port}`)
-})
