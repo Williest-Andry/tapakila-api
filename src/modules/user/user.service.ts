@@ -52,12 +52,11 @@ export async function update(
     throw new NotFoundError(`user with id ${userId}`);
   }
 
-  const existingUserWithEmail = await findByEmail(userDto.email);
-  if (
-    existingUserWithEmail &&
-    JSON.stringify(existingUserWithEmail) !== JSON.stringify(existingUser)
-  ) {
-    throw new ConflictError(`user with email ${userDto.email}`);
+  if (userDto.email) {
+    const existingUserWithEmail = await findByEmail(userDto.email);
+    if (existingUserWithEmail && existingUserWithEmail.id !== existingUser.id) {
+      throw new ConflictError(`user with email ${userDto.email}`);
+    }
   }
 
   const user: Prisma.UserUpdateInput = {
