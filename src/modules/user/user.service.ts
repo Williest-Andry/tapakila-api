@@ -16,8 +16,13 @@ export async function findByEmail(userEmail: string) {
   return await userRepository.findByEmail(userEmail);
 }
 
-export async function findById(userId: string) {
-  return await userRepository.findById(userId);
+export async function findById(userId: string): Promise<UserResponseDto> {
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new NotFoundError(`user with id ${userId}`);
+  }
+
+  return toUserResponse(user);
 }
 
 export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {

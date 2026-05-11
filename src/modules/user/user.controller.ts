@@ -5,7 +5,21 @@ import { CreateUserDto, UpdateUserDto } from "./user.dto.js";
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
     const users = await userService.findAll();
-    res.json(users);
+    res.status(200).json(users);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function findById(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.params.id;
+    const user = await userService.findById(userId);
+    res.status(200).json(user);
   } catch (e) {
     next(e);
   }
