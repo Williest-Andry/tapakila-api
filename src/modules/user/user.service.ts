@@ -1,6 +1,6 @@
 import { Prisma, User } from "../../../generated/prisma/client.js";
-import { ConflictError } from "../../common/errors/index.js";
-import { CreateUserDto, UserResponseDto } from "./user.dto.js";
+import { ConflictError, NotFoundError } from "../../common/errors/index.js";
+import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 
 export async function findAll() {
@@ -14,6 +14,10 @@ function toUserResponse(user: User): UserResponseDto {
 
 export async function findByEmail(userEmail: string) {
   return await userRepository.findByEmail(userEmail);
+}
+
+export async function findById(userId: string) {
+  return await userRepository.findById(userId);
 }
 
 export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {
@@ -32,4 +36,32 @@ export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {
   const createdUser = await userRepository.create(user);
 
   return toUserResponse(createdUser);
+}
+
+export async function update(
+  userId: string,
+  userDto: UpdateUserDto,
+): Promise<UserResponseDto> {
+  const existingUser = await findById(userId);
+  if (!existingUser) {
+    throw new NotFoundError(`user with id ${userId}`);
+  }
+
+  const existingUserWithEmail = await findByEmail(userDto.email);
+  if (
+    existingUserWithEmail &&
+    JSON.stringify(existingUserWithEmail) !== JSON.stringify(existingUser)
+  ) {
+    throw new ConflictError(`user with email ${userDto.email}`);
+  }
+
+  const user: Prisma.UserUpdateInput = {
+    email: userDto.email,
+    firstName: userDto.firstName,
+    lastName: userDto.lastName,
+  };
+
+  const updatedUser = await userRepository.update(userId, user);
+
+  return toUserResponse(updatedUser);
 }

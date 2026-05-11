@@ -11,3 +11,9 @@ export interface UserResponseDto {
   lastName: string;
   createdAt: Date;
 }
+
+export interface UpdateUserDto {
+  email: string;
+  firstName: string;
+  lastName: string;
+}

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as userService from "./user.service.js";
-import { CreateUserDto } from "./user.dto.js";
+import { CreateUserDto, UpdateUserDto } from "./user.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -16,6 +16,21 @@ export async function create(req: Request, res: Response, next: NextFunction) {
     const userDto: CreateUserDto = req.body;
     const createdUser = await userService.create(userDto);
     res.status(201).json(createdUser);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function update(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.params.id;
+    const userDto: UpdateUserDto = req.body;
+    const updatedUser = await userService.update(userId, userDto);
+    res.status(200).json(updatedUser);
   } catch (e) {
     next(e);
   }
