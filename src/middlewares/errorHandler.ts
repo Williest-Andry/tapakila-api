@@ -1,13 +1,28 @@
 import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
+import AppError from "../utils/AppError.js";
 
 export default function errorHandler(
-  err: any,
+  err: unknown,
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
-  const status = err.status || 500;
-  const message = err.message || "Internal error";
+  if (err instanceof ZodError) {
+    res.status(400).json({
+      message: "Invalid data",
+      errors: err.issues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      })),
+    });
+    return;
+  }
 
-  res.status(status).json({ error: message });
+  if (err instanceof AppError) {
+    res
+      .status(err.status || 500)
+      .json({ message: err.message || "Internal error" });
+    return;
+  }
 }
