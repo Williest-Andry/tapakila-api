@@ -1,5 +1,5 @@
 import { Prisma, User } from "../../../generated/prisma/client.js";
-import { ConflictError, NotFoundError } from "../../common/errors/index.js";
+import { ConflictError } from "../../common/errors/index.js";
 import { CreateUserDto, UserResponseDto } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 

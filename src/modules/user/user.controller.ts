@@ -3,7 +3,12 @@ import * as userService from "./user.service.js";
 import { CreateUserDto } from "./user.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
-  res.json(await userService.findAll());
+  try {
+    const users = await userService.findAll();
+    res.json(users);
+  } catch (e) {
+    next(e);
+  }
 }
 
 export async function create(req: Request, res: Response, next: NextFunction) {
