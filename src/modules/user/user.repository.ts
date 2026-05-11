@@ -36,3 +36,11 @@ export async function findById(userId: string) {
     },
   });
 }
+
+export async function deleteById(userId: string) {
+  return await prisma.user.delete({
+    where: {
+      id: userId,
+    },
+  });
+}

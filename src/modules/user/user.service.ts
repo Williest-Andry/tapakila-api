@@ -65,3 +65,14 @@ export async function update(
 
   return toUserResponse(updatedUser);
 }
+
+export async function deleteById(userId: string): Promise<UserResponseDto> {
+  const existingUser = await findById(userId);
+  if (!existingUser) {
+    throw new NotFoundError(`user with id ${userId}`);
+  }
+
+  const deletedUser = await userRepository.deleteById(userId);
+
+  return toUserResponse(deletedUser);
+}

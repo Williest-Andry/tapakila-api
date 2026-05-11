@@ -35,3 +35,17 @@ export async function update(
     next(e);
   }
 }
+
+export async function deleteById(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.params.id;
+    const deletedUser = await userService.deleteById(userId);
+    res.status(200).json(deletedUser);
+  } catch (e) {
+    next(e);
+  }
+}
