@@ -2,6 +2,7 @@ import { Prisma, User } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
+import * as bcrypt from "bcrypt";
 
 export async function findAll() {
   return await userRepository.findAll();
@@ -31,9 +32,11 @@ export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {
     throw new ConflictError(`user with email ${userDto.email}`);
   }
 
+  const hashedPassword = await bcrypt.hash(userDto.password, 10);
+
   const user: Prisma.UserCreateInput = {
     email: userDto.email,
-    passwordHash: "[IMPORTANT] vo ho atao",
+    passwordHash: hashedPassword,
     firstName: userDto.firstName,
     lastName: userDto.lastName,
   };
