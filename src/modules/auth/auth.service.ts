@@ -29,3 +29,16 @@ export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
 
   return { accessToken, refreshToken };
 }
+
+export async function logout(
+  userId: string,
+  refreshToken: string,
+): Promise<string> {
+  const storedToken = await authRepository.findRefreshToken(refreshToken);
+
+  if (!storedToken) throw new UnauthorizedError("Invalid refresh token ");
+
+  await authRepository.deleteRefreshTokenByUserId(userId);
+
+  return "Successful logout";
+}

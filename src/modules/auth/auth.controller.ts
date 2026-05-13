@@ -10,3 +10,14 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     next(e);
   }
 }
+
+export async function logout(req: Request, res: Response, next: NextFunction) {
+  try {
+    const refreshToken = req.body.refreshToken;
+    const userId = req.user?.userId ?? "";
+    const message = await authService.logout(userId, refreshToken);
+    res.status(200).json(message);
+  } catch (e) {
+    next(e);
+  }
+}

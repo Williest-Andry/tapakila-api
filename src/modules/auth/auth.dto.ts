@@ -10,5 +10,10 @@ export const TokenResponseSchema = z.object({
   refreshToken: z.jwt(),
 });
 
+export const LogoutSchema = z.object({
+  refreshToken: z.jwt(),
+});
+
 export type LoginDto = z.infer<typeof LoginSchema>;
 export type TokenResponseDto = z.infer<typeof TokenResponseSchema>;
+export type LogoutDto = z.infer<typeof LogoutSchema>;
