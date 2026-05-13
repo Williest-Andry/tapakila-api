@@ -21,3 +21,17 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
     next(e);
   }
 }
+
+export async function register(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userToCreate = req.body;
+    const createdUser = await authService.register(userToCreate);
+    res.status(200).json(createdUser);
+  } catch (e) {
+    next(e);
+  }
+}

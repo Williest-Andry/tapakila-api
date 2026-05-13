@@ -3,10 +3,19 @@ import {
   generateRefreshToken,
   JwtPayload,
 } from "../../config/jwt.js";
-import { LoginDto, TokenResponseDto } from "./auth.dto.js";
+import {
+  LoginDto,
+  RegisterDto,
+  RegisterResponseDto,
+  TokenResponseDto,
+} from "./auth.dto.js";
 import * as authRepository from "./auth.repository.js";
 import * as userRepository from "../user/user.repository.js";
-import { NotFoundError, UnauthorizedError } from "../../common/errors/index.js";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../common/errors/index.js";
 import * as bcrypt from "bcrypt";
 
 export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
@@ -41,4 +50,51 @@ export async function logout(
   await authRepository.deleteRefreshTokenByUserId(userId);
 
   return "Successful logout";
+}
+
+export async function register(
+  createUserDto: RegisterDto,
+): Promise<RegisterResponseDto> {
+  const existingUser = await userRepository.findByEmail(createUserDto.email);
+  if (existingUser)
+    throw new ConflictError(
+      `user with email : ${createUserDto.email} already exists`,
+    );
+
+  const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+  const createdUser = await userRepository.create({
+    email: createUserDto.email,
+    firstName: createUserDto.firstName,
+    lastName: createUserDto.lastName,
+    passwordHash: hashedPassword,
+  });
+
+  const tokenPayload: JwtPayload = {
+    userId: createdUser.id,
+    role: createdUser.role,
+  };
+
+  const accessToken = generateAccessToken(tokenPayload);
+  const refreshToken = generateRefreshToken(tokenPayload);
+
+  const savedRefreshToken = await authRepository.saveRefreshToken({
+    userId: createdUser.id,
+    token: refreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  const userRegisterResponse = {
+    data: {
+      email: createUserDto.email,
+      firstName: createUserDto.firstName,
+      lastName: createUserDto.lastName,
+    },
+    tokens: {
+      accessToken: accessToken,
+      refreshToken: savedRefreshToken.token,
+    },
+  };
+
+  return userRegisterResponse;
 }
