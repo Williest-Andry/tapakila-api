@@ -21,4 +21,6 @@ authRoutes.post(
   authController.register,
 );
 
+authRoutes.get("/me", authenticate, authController.getProfile);
+
 export default authRoutes;

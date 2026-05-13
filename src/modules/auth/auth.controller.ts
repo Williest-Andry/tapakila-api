@@ -35,3 +35,17 @@ export async function register(
     next(e);
   }
 }
+
+export async function getProfile(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.user?.userId ?? "";
+    const userProfile = await authService.getProfile(userId);
+    res.status(200).json(userProfile);
+  } catch (e) {
+    next(e);
+  }
+}

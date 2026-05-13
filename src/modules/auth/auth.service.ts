@@ -5,6 +5,7 @@ import {
 } from "../../config/jwt.js";
 import {
   LoginDto,
+  ProfileDto,
   RegisterDto,
   RegisterResponseDto,
   TokenResponseDto,
@@ -97,4 +98,19 @@ export async function register(
   };
 
   return userRegisterResponse;
+}
+
+export async function getProfile(userId: string): Promise<ProfileDto> {
+  const existingUser = await userRepository.findById(userId);
+  if (!existingUser) throw new NotFoundError("user");
+
+  const userProfile: ProfileDto = {
+    email: existingUser.email,
+    firstName: existingUser.firstName,
+    lastName: existingUser.lastName,
+    createdAt: existingUser.createdAt,
+    role: existingUser.role,
+  };
+
+  return userProfile;
 }
