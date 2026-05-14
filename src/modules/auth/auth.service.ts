@@ -78,7 +78,7 @@ export async function register(
   const accessToken = generateAccessToken(tokenPayload);
   const refreshToken = generateRefreshToken(tokenPayload);
 
-  const savedRefreshToken = await authRepository.saveRefreshToken({
+  await authRepository.saveRefreshToken({
     userId: createdUser.id,
     token: refreshToken,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -91,8 +91,8 @@ export async function register(
       lastName: createUserDto.lastName,
     },
     tokens: {
-      accessToken: accessToken,
-      refreshToken: savedRefreshToken.token,
+      accessToken,
+      refreshToken,
     },
   };
 
@@ -115,33 +115,33 @@ export async function getProfile(userId: string): Promise<ProfileDto> {
 }
 
 export async function refreshToken(
-  refreshToken: string,
+  actualRefreshToken: string,
 ): Promise<TokenResponseDto> {
   const storedRefreshToken =
-    await authRepository.findRefreshToken(refreshToken);
+    await authRepository.findRefreshToken(actualRefreshToken);
   if (!storedRefreshToken || storedRefreshToken.expiresAt < new Date())
     throw new UnauthorizedError("Invalid refresh token");
 
-  const decoded = verifyRefreshToken(refreshToken);
+  const decoded = verifyRefreshToken(actualRefreshToken);
 
   const payload: JwtPayload = {
     userId: decoded.userId,
     role: decoded.role,
   };
 
-  const newAccessToken = generateAccessToken(payload);
-  const newRefreshToken = generateRefreshToken(payload);
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
 
-  await authRepository.deleteRefreshToken(refreshToken);
+  await authRepository.deleteRefreshToken(actualRefreshToken);
 
-  const savedNewRefreshToken = await authRepository.saveRefreshToken({
+  await authRepository.saveRefreshToken({
     userId: payload.userId,
-    token: newRefreshToken,
+    token: refreshToken,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
   return {
-    accessToken: newAccessToken,
-    refreshToken: savedNewRefreshToken.token,
+    accessToken,
+    refreshToken,
   };
 }
