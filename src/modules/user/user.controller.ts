@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as userService from "./user.service.js";
-import { CreateUserDto, UpdateUserDto } from "./user.dto.js";
+import { CreateUserDto } from "./user.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -59,6 +59,21 @@ export async function deleteById(
     const userId = req.params.id;
     const deletedUser = await userService.deleteById(userId);
     res.status(200).json(deletedUser);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function updateUserProfile(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.user!.userId;
+    const userDto = req.body;
+    const updatedUser = await userService.updateUserProfile(userId, userDto);
+    res.status(200).json(updatedUser);
   } catch (e) {
     next(e);
   }

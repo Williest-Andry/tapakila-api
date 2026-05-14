@@ -1,6 +1,11 @@
 import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
-import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./user.dto.js";
+import {
+  CreateUserDto,
+  UpdateUserByAdminDto,
+  UpdateUserDto,
+  UserResponseDto,
+} from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 import * as bcrypt from "bcrypt";
 
@@ -52,7 +57,7 @@ export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {
 
 export async function update(
   userId: string,
-  userDto: UpdateUserDto,
+  userDto: UpdateUserByAdminDto,
 ): Promise<UserResponseDto> {
   const existingUser = await findById(userId);
   if (!existingUser) {
@@ -87,4 +92,31 @@ export async function deleteById(userId: string): Promise<UserResponseDto> {
   const deletedUser = await userRepository.deleteById(userId);
 
   return toUserResponse(deletedUser);
+}
+
+export async function updateUserProfile(
+  userId: string,
+  userDto: UpdateUserDto,
+) {
+  const existingUser = await findById(userId);
+  if (!existingUser) {
+    throw new NotFoundError(`user with id ${userId}`);
+  }
+
+  if (userDto.email) {
+    const existingUserWithEmail = await findByEmail(userDto.email);
+    if (existingUserWithEmail && existingUserWithEmail.id !== existingUser.id) {
+      throw new ConflictError(`user with email ${userDto.email}`);
+    }
+  }
+
+  const user: Prisma.UserUpdateInput = {
+    email: userDto.email,
+    firstName: userDto.firstName,
+    lastName: userDto.lastName,
+  };
+
+  const updatedUser = await userRepository.update(userId, user);
+
+  return toUserResponse(updatedUser);
 }
