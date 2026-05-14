@@ -1,4 +1,4 @@
-import { Prisma, User } from "../../../generated/prisma/client.js";
+import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
@@ -70,6 +70,7 @@ export async function update(
     email: userDto.email,
     firstName: userDto.firstName,
     lastName: userDto.lastName,
+    role: userDto.role as UserRole,
   };
 
   const updatedUser = await userRepository.update(userId, user);

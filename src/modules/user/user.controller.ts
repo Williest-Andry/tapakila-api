@@ -42,7 +42,7 @@ export async function update(
 ) {
   try {
     const userId = req.params.id;
-    const userDto: UpdateUserDto = req.body;
+    const userDto = req.body;
     const updatedUser = await userService.update(userId, userDto);
     res.status(200).json(updatedUser);
   } catch (e) {
