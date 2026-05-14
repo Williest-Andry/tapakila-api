@@ -29,7 +29,7 @@ export async function register(
   try {
     const userToCreate = req.body;
     const createdUser = await authService.register(userToCreate);
-    res.status(200).json(createdUser);
+    res.status(201).json(createdUser);
   } catch (e) {
     next(e);
   }
