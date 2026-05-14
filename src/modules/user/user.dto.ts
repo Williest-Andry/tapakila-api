@@ -12,7 +12,7 @@ export const UpdateUserByAdminSchema = z.object({
   email: z.email("Invalid email").optional(),
   firstName: z.string().min(1, "At least one character is required").optional(),
   lastName: z.string().min(1, "At least one character is required").optional(),
-  role: z.enum(["USER", "ORGANISER", "ADMIN"]).optional(),
+  role: z.enum(["USER", "ORGANIZER", "ADMIN"]).optional(),
 });
 
 export const UpdateUserSchema = z.object({

@@ -75,7 +75,7 @@ export async function update(
     email: userDto.email,
     firstName: userDto.firstName,
     lastName: userDto.lastName,
-    role: userDto.role as UserRole,
+    role: userDto.role,
   };
 
   const updatedUser = await userRepository.update(userId, user);
