@@ -10,7 +10,7 @@ export async function saveRefreshToken(
 }
 
 export async function findRefreshToken(refreshToken: string) {
-  return await prisma.refreshToken.findFirst({
+  return await prisma.refreshToken.findUnique({
     where: {
       token: refreshToken,
     },
