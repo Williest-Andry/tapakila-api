@@ -2,6 +2,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
   JwtPayload,
+  verifyRefreshToken,
 } from "../../config/jwt.js";
 import {
   LoginDto,
@@ -113,4 +114,36 @@ export async function getProfile(userId: string): Promise<ProfileDto> {
   };
 
   return userProfile;
+}
+
+export async function refreshToken(
+  refreshToken: string,
+): Promise<TokenResponseDto> {
+  const storedRefreshToken =
+    await authRepository.findRefreshToken(refreshToken);
+  if (!storedRefreshToken || storedRefreshToken.expiresAt < new Date())
+    throw new UnauthorizedError("Invalid refresh token");
+
+  const decoded = verifyRefreshToken(refreshToken);
+
+  const payload: JwtPayload = {
+    userId: decoded.userId,
+    role: decoded.role,
+  };
+
+  const newAccessToken = generateAccessToken(payload);
+  const newRefreshToken = generateRefreshToken(payload);
+
+  await authRepository.deleteRefreshTokenByUserId(payload.userId);
+
+  const savedNewRefreshToken = await authRepository.saveRefreshToken({
+    userId: payload.userId,
+    token: newRefreshToken,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: savedNewRefreshToken.token,
+  };
 }

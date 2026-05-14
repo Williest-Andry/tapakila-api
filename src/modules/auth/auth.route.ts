@@ -1,7 +1,12 @@
 import { Router } from "express";
 import * as authController from "./auth.controller.js";
 import { validateBody } from "../../middlewares/validate.js";
-import { LoginSchema, LogoutSchema, RegisterSchema } from "./auth.dto.js";
+import {
+  LoginSchema,
+  LogoutSchema,
+  RefreshTokensSchema,
+  RegisterSchema,
+} from "./auth.dto.js";
 import authenticate from "../../middlewares/authentificate.js";
 
 const authRoutes = Router();
@@ -22,5 +27,12 @@ authRoutes.post(
 );
 
 authRoutes.get("/me", authenticate, authController.getProfile);
+
+authRoutes.post(
+  "/refresh-tokens",
+  authenticate,
+  validateBody(RefreshTokensSchema),
+  authController.refreshToken,
+);
 
 export default authRoutes;

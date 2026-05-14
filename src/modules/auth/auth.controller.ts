@@ -49,3 +49,17 @@ export async function getProfile(
     next(e);
   }
 }
+
+export async function refreshToken(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const refreshToken = req.body.refreshToken;
+    const tokens = await authService.refreshToken(refreshToken);
+    res.status(200).json(tokens);
+  } catch (e) {
+    next(e);
+  }
+}
