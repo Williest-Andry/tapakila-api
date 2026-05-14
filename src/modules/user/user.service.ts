@@ -8,6 +8,7 @@ import {
 } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 import * as bcrypt from "bcrypt";
+import * as authRepository from "../auth/auth.repository.js";
 
 function toUserResponse(user: User): UserResponseDto {
   const { passwordHash, ...safeUser } = user;
@@ -118,9 +119,15 @@ export async function updateUserProfile(
 }
 
 export async function toOrganizer(userId: string): Promise<UserResponseDto> {
-  await findById(userId);
+  const existingUser = await findById(userId);
+
+  if (existingUser.role === "ORGANIZER") {
+    throw new ConflictError("This organizer");
+  }
 
   const organizer = await userRepository.update(userId, { role: "ORGANIZER" });
+
+  await authRepository.deleteAllUserRefreshTokens(userId);
 
   return toUserResponse(organizer);
 }

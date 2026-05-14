@@ -89,7 +89,10 @@ export async function toOrganizer(
   try {
     const userId = req.user!.userId;
     const organizer = await userService.toOrganizer(userId);
-    res.status(200).json(organizer);
+    res.status(200).json({
+      organizer,
+      message: "[IMPORTANT] Please log in again to apply changes !",
+    });
   } catch (e) {
     next(e);
   }
