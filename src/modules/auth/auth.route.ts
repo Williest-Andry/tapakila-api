@@ -29,7 +29,6 @@ authRoutes.get("/me", authenticate, authController.getProfile);
 
 authRoutes.post(
   "/refresh-tokens",
-  authenticate,
   validateBody(RefreshTokensSchema),
   authController.refreshToken,
 );
