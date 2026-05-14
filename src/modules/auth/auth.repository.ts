@@ -17,10 +17,10 @@ export async function findRefreshToken(refreshToken: string) {
   });
 }
 
-export async function deleteRefreshTokenByUserId(userId: string) {
-  return await prisma.refreshToken.deleteMany({
+export async function deleteRefreshToken(refreshToken: string) {
+  return await prisma.refreshToken.delete({
     where: {
-      userId: userId,
+      token: refreshToken,
     },
   });
 }

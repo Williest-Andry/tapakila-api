@@ -41,15 +41,13 @@ export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
   return { accessToken, refreshToken };
 }
 
-export async function logout(
-  userId: string,
-  refreshToken: string,
-): Promise<string> {
+export async function logout(refreshToken: string): Promise<string> {
   const storedToken = await authRepository.findRefreshToken(refreshToken);
 
-  if (!storedToken) throw new UnauthorizedError("Invalid refresh token ");
+  if (!storedToken || storedToken.expiresAt < new Date())
+    throw new UnauthorizedError("Invalid refresh token ");
 
-  await authRepository.deleteRefreshTokenByUserId(userId);
+  await authRepository.deleteRefreshToken(refreshToken);
 
   return "Successful logout";
 }
@@ -134,7 +132,7 @@ export async function refreshToken(
   const newAccessToken = generateAccessToken(payload);
   const newRefreshToken = generateRefreshToken(payload);
 
-  await authRepository.deleteRefreshTokenByUserId(payload.userId);
+  await authRepository.deleteRefreshToken(refreshToken);
 
   const savedNewRefreshToken = await authRepository.saveRefreshToken({
     userId: payload.userId,
