@@ -13,7 +13,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
 export async function logout(req: Request, res: Response, next: NextFunction) {
   try {
-    const refreshToken = req.body.refreshToken;
+    const { refreshToken } = req.body;
     const message = await authService.logout(refreshToken);
     res.status(200).json(message);
   } catch (e) {
