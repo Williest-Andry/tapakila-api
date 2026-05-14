@@ -1,4 +1,4 @@
-import { Prisma, User, UserRole } from "../../../generated/prisma/client.js";
+import { Prisma, User } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateUserDto,
@@ -14,8 +14,11 @@ function toUserResponse(user: User): UserResponseDto {
   return safeUser;
 }
 
-export async function findAll(): Promise<UserResponseDto[]> {
-  const users = await userRepository.findAll();
+export async function findAll(
+  page: number,
+  limit: number,
+): Promise<UserResponseDto[]> {
+  const users = await userRepository.findAll(page, limit);
 
   const usersResponse: UserResponseDto[] = users.map(toUserResponse);
 
