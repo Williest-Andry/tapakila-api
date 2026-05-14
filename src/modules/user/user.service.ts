@@ -4,13 +4,17 @@ import { CreateUserDto, UpdateUserDto, UserResponseDto } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 import * as bcrypt from "bcrypt";
 
-export async function findAll() {
-  return await userRepository.findAll();
-}
-
 function toUserResponse(user: User): UserResponseDto {
   const { passwordHash, ...safeUser } = user;
   return safeUser;
+}
+
+export async function findAll(): Promise<UserResponseDto[]> {
+  const users = await userRepository.findAll();
+
+  const usersResponse: UserResponseDto[] = users.map(toUserResponse);
+
+  return usersResponse;
 }
 
 export async function findByEmail(userEmail: string) {
