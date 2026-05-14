@@ -23,7 +23,12 @@ export async function findAll(): Promise<UserResponseDto[]> {
 }
 
 export async function findByEmail(userEmail: string) {
-  return await userRepository.findByEmail(userEmail);
+  const user = await userRepository.findByEmail(userEmail);
+  if (!user) {
+    throw new NotFoundError(`user with email ${userEmail}`);
+  }
+
+  return toUserResponse(user);
 }
 
 export async function findById(userId: string): Promise<UserResponseDto> {
@@ -36,10 +41,7 @@ export async function findById(userId: string): Promise<UserResponseDto> {
 }
 
 export async function create(userDto: CreateUserDto): Promise<UserResponseDto> {
-  const existingUser = await findByEmail(userDto.email);
-  if (existingUser) {
-    throw new ConflictError(`user with email ${userDto.email}`);
-  }
+  await findByEmail(userDto.email);
 
   const hashedPassword = await bcrypt.hash(userDto.password, 10);
 
@@ -60,13 +62,10 @@ export async function update(
   userDto: UpdateUserByAdminDto,
 ): Promise<UserResponseDto> {
   const existingUser = await findById(userId);
-  if (!existingUser) {
-    throw new NotFoundError(`user with id ${userId}`);
-  }
 
   if (userDto.email) {
     const existingUserWithEmail = await findByEmail(userDto.email);
-    if (existingUserWithEmail && existingUserWithEmail.id !== existingUser.id) {
+    if (existingUserWithEmail.id !== existingUser.id) {
       throw new ConflictError(`user with email ${userDto.email}`);
     }
   }
@@ -84,10 +83,7 @@ export async function update(
 }
 
 export async function deleteById(userId: string): Promise<UserResponseDto> {
-  const existingUser = await findById(userId);
-  if (!existingUser) {
-    throw new NotFoundError(`user with id ${userId}`);
-  }
+  await findById(userId);
 
   const deletedUser = await userRepository.deleteById(userId);
 
@@ -99,13 +95,10 @@ export async function updateUserProfile(
   userDto: UpdateUserDto,
 ) {
   const existingUser = await findById(userId);
-  if (!existingUser) {
-    throw new NotFoundError(`user with id ${userId}`);
-  }
 
   if (userDto.email) {
     const existingUserWithEmail = await findByEmail(userDto.email);
-    if (existingUserWithEmail && existingUserWithEmail.id !== existingUser.id) {
+    if (existingUserWithEmail.id !== existingUser.id) {
       throw new ConflictError(`user with email ${userDto.email}`);
     }
   }
@@ -122,10 +115,7 @@ export async function updateUserProfile(
 }
 
 export async function toOrganizer(userId: string): Promise<UserResponseDto> {
-  const existingUser = await findById(userId);
-  if (!existingUser) {
-    throw new NotFoundError(`user with id ${userId}`);
-  }
+  await findById(userId);
 
   const organizer = await userRepository.update(userId, { role: "ORGANIZER" });
 
