@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as userController from "./user.controller.js";
 import { validateBody } from "../../middlewares/validate.js";
 import { CreateUserSchema, UpdateUserSchema } from "./user.dto.js";
-import authenticate from "../../middlewares/authentificate.js";
+import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
 
 const userRoutes = Router();

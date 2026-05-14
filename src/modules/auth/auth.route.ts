@@ -6,7 +6,7 @@ import {
   RefreshTokensSchema,
   RegisterSchema,
 } from "./auth.dto.js";
-import authenticate from "../../middlewares/authentificate.js";
+import authenticate from "../../middlewares/authenticate.js";
 
 const authRoutes = Router();
 
