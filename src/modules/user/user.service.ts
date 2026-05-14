@@ -120,3 +120,14 @@ export async function updateUserProfile(
 
   return toUserResponse(updatedUser);
 }
+
+export async function toOrganizer(userId: string): Promise<UserResponseDto> {
+  const existingUser = await findById(userId);
+  if (!existingUser) {
+    throw new NotFoundError(`user with id ${userId}`);
+  }
+
+  const organizer = await userRepository.update(userId, { role: "ORGANIZER" });
+
+  return toUserResponse(organizer);
+}

@@ -20,6 +20,13 @@ userRoutes.patch(
   userController.updateUserProfile,
 );
 
+userRoutes.patch(
+  "/me/to-organizer",
+  authenticate,
+  authorize("USER"),
+  userController.toOrganizer,
+);
+
 userRoutes.get(
   "/:id",
   authenticate,

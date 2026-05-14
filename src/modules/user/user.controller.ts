@@ -78,3 +78,17 @@ export async function updateUserProfile(
     next(e);
   }
 }
+
+export async function toOrganizer(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const userId = req.user!.userId;
+    const organizer = await userService.toOrganizer(userId);
+    res.status(200).json(organizer);
+  } catch (e) {
+    next(e);
+  }
+}
