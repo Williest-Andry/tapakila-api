@@ -41,7 +41,7 @@ export async function getProfile(
   next: NextFunction,
 ) {
   try {
-    const userId = req.user?.userId ?? "";
+    const userId = req.user!.userId;
     const userProfile = await authService.getProfile(userId);
     res.status(200).json(userProfile);
   } catch (e) {
