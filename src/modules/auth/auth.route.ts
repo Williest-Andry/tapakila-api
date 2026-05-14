@@ -3,7 +3,6 @@ import * as authController from "./auth.controller.js";
 import { validateBody } from "../../middlewares/validate.js";
 import {
   LoginSchema,
-  LogoutSchema,
   RefreshTokensSchema,
   RegisterSchema,
 } from "./auth.dto.js";
@@ -16,7 +15,7 @@ authRoutes.post("/login", validateBody(LoginSchema), authController.login);
 authRoutes.post(
   "/logout",
   authenticate,
-  validateBody(LogoutSchema),
+  validateBody(RefreshTokensSchema),
   authController.logout,
 );
 
