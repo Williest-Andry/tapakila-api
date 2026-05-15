@@ -1,5 +1,5 @@
 import { EventCategory } from "../../../generated/prisma/client.js";
-import { NotFoundError } from "../../common/errors/index.js";
+import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateEventCategoryDto,
   EventCategoryResponseDto,
@@ -47,6 +47,12 @@ export async function findByName(name: string) {
 export async function create(
   categoryDto: CreateEventCategoryDto,
 ): Promise<EventCategoryResponseDto> {
+  const existingCategory = await categoryRepository.findByName(
+    categoryDto.name,
+  );
+  if (existingCategory)
+    throw new ConflictError(`event category with name : ${categoryDto.name}`);
+
   const slug = categoryDto.name.split(" ").join("-").toLocaleLowerCase();
 
   const eventCategory = {
