@@ -1,5 +1,8 @@
 import { EventCategory } from "../../../generated/prisma/client.js";
-import { EventCategoryResponseDto } from "./category.dto.js";
+import {
+  CreateEventCategoryDto,
+  EventCategoryResponseDto,
+} from "./category.dto.js";
 import * as categoryRepository from "./category.repository.js";
 
 function toCategoryResponse(
@@ -23,4 +26,19 @@ export async function findAll(
   const responseEventCategories = eventCategories.map(toCategoryResponse);
 
   return responseEventCategories;
+}
+
+export async function create(
+  categoryDto: CreateEventCategoryDto,
+): Promise<EventCategoryResponseDto> {
+  const slug = categoryDto.name.split(" ").join("-").toLocaleLowerCase();
+
+  const eventCategory = {
+    name: categoryDto.name,
+    slug: slug,
+  };
+
+  const createdEventCategory = await categoryRepository.create(eventCategory);
+
+  return toCategoryResponse(createdEventCategory);
 }

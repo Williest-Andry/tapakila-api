@@ -12,3 +12,15 @@ export async function findAll(req: Request, res: Response, next: NextFunction) {
     next(e);
   }
 }
+
+export async function create(req: Request, res: Response, next: NextFunction) {
+  try {
+    const eventCategoryToCreate = req.body;
+    const createdEventCategory = await categoryService.create(
+      eventCategoryToCreate,
+    );
+    res.status(201).json(createdEventCategory);
+  } catch (e) {
+    next(e);
+  }
+}
