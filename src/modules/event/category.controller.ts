@@ -13,6 +13,21 @@ export async function findAll(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function findById(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const id = req.params.id as string;
+
+    const eventCategory = await categoryService.findById(id);
+    res.status(200).json(eventCategory);
+  } catch (e) {
+    next(e);
+  }
+}
+
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const eventCategoryToCreate = req.body;

@@ -1,11 +1,12 @@
 import { EventCategory } from "../../../generated/prisma/client.js";
+import { NotFoundError } from "../../common/errors/index.js";
 import {
   CreateEventCategoryDto,
   EventCategoryResponseDto,
 } from "./category.dto.js";
 import * as categoryRepository from "./category.repository.js";
 
-function toCategoryResponse(
+function toEventCategoryResponse(
   eventCategory: EventCategory,
 ): EventCategoryResponseDto {
   const responseEventCategory: EventCategoryResponseDto = {
@@ -23,9 +24,24 @@ export async function findAll(
 ): Promise<EventCategoryResponseDto[]> {
   const eventCategories = await categoryRepository.findAll(page, limit);
 
-  const responseEventCategories = eventCategories.map(toCategoryResponse);
+  const responseEventCategories = eventCategories.map(toEventCategoryResponse);
 
   return responseEventCategories;
+}
+
+export async function findById(id: string): Promise<EventCategoryResponseDto> {
+  const eventCategory = await categoryRepository.findById(id);
+  if (!eventCategory) throw new NotFoundError(`event category with id : ${id}`);
+
+  return toEventCategoryResponse(eventCategory);
+}
+
+export async function findByName(name: string) {
+  const eventCategory = await categoryRepository.findByName(name);
+  if (!eventCategory)
+    throw new NotFoundError(`event category with name : ${name}`);
+
+  return eventCategory;
 }
 
 export async function create(
@@ -40,5 +56,5 @@ export async function create(
 
   const createdEventCategory = await categoryRepository.create(eventCategory);
 
-  return toCategoryResponse(createdEventCategory);
+  return toEventCategoryResponse(createdEventCategory);
 }

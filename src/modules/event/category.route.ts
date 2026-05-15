@@ -9,6 +9,8 @@ const eventCategoriesRoutes = Router();
 
 eventCategoriesRoutes.get("/", categoryController.findAll);
 
+eventCategoriesRoutes.get("/:id", categoryController.findById);
+
 eventCategoriesRoutes.post(
   "/",
   authenticate,
