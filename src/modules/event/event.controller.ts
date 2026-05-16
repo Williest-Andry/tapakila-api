@@ -26,3 +26,25 @@ export async function create(req: Request, res: Response, next: NextFunction) {
     next(e);
   }
 }
+
+export async function updateStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const eventId = req.params.id as string;
+    const eventStatusDto = req.body;
+    const { userId, role } = req.user!;
+
+    const updatedEvent = await eventService.updateStatus(
+      eventId,
+      eventStatusDto,
+      userId,
+      role,
+    );
+    res.status(200).json(updatedEvent);
+  } catch (e) {
+    next(e);
+  }
+}

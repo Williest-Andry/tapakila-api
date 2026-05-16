@@ -1,8 +1,17 @@
 import * as eventRepository from "./event.repository.js";
-import { UserRole } from "../../../generated/prisma/enums.js";
-import { CreateEventDto, EventResponseDto } from "./event.dto.js";
+import { EventStatus, UserRole } from "../../../generated/prisma/enums.js";
+import {
+  CreateEventDto,
+  EventResponseDto,
+  UpdateEventStatusDto,
+} from "./event.dto.js";
 import * as categoryRepository from "./category.repository.js";
-import { ConflictError, NotFoundError } from "../../common/errors/index.js";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../common/errors/index.js";
 import * as userRepository from "../user/user.repository.js";
 import { Prisma } from "../../../generated/prisma/client.js";
 import AppError from "../../utils/AppError.js";
@@ -108,4 +117,41 @@ export async function create(
 
     throw new AppError("Unexpected internal error", 500);
   }
+}
+
+const allowedEventStatusTransitions: Record<EventStatus, EventStatus[]> = {
+  DRAFT: ["PUBLISHED", "CANCELLED"],
+  PUBLISHED: ["DRAFT", "CANCELLED"],
+  CANCELLED: [],
+};
+
+export async function updateStatus(
+  eventId: string,
+  eventStatusDto: UpdateEventStatusDto,
+  userId: string,
+  userRole: UserRole,
+) {
+  const event = await eventRepository.findById(eventId);
+  if (!event) throw new NotFoundError(`event with id : ${eventId}`);
+
+  if (userRole === UserRole.ORGANIZER && event.organizerId !== userId) {
+    throw new ForbiddenError();
+  }
+
+  const allowedStatus = allowedEventStatusTransitions[event.status];
+  if (!allowedStatus.includes(eventStatusDto.status)) {
+    throw new BadRequestError(
+      `Cannot transition from ${event.status} to ${eventStatusDto.status}`,
+    );
+  }
+
+  // pub -> can => cancelled bookings and ticket
+
+  // pub -> draft => not allowed if bookings exist
+
+  event.status = eventStatusDto.status;
+
+  const updatedEvent = await eventRepository.update(eventId, event);
+
+  return toEventResponse(updatedEvent);
 }

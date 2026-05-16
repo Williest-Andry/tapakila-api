@@ -61,8 +61,26 @@ export async function findAll(
   });
 }
 
+export async function findById(eventId: string) {
+  return prisma.event.findUnique({
+    where: {
+      id: eventId,
+    },
+  });
+}
+
 export async function create(event: Prisma.EventCreateInput) {
   return prisma.event.create({
+    data: event,
+    include: eventWithRelations.include,
+  });
+}
+
+export async function update(eventId: string, event: Prisma.EventUpdateInput) {
+  return prisma.event.update({
+    where: {
+      id: eventId,
+    },
     data: event,
     include: eventWithRelations.include,
   });

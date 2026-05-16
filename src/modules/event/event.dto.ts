@@ -25,8 +25,13 @@ export const CreateEventSchema = z.object({
   }),
 });
 
+export const UpdateEventStatusSchema = z.object({
+  status: z.enum(["DRAFT", "PUBLISHED", "CANCELLED"]),
+});
+
 export type QueryParamsDto = z.infer<typeof QueryParamsSchema>;
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
+export type UpdateEventStatusDto = z.infer<typeof UpdateEventStatusSchema>;
 
 export type EventResponseDto = {
   id: string;
