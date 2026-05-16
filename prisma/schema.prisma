@@ -74,6 +74,8 @@ model Event {
 
   ticketTypes TicketType[]
   bookings    Booking[]
+
+  @@unique([title, eventDate, location, organizerId])
 }
 
 model TicketType {
