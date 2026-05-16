@@ -14,7 +14,19 @@ export const QueryParamsSchema = z.object({
   limit: z.int("limit must be positive").optional(),
 });
 
+export const CreateEventSchema = z.object({
+  title: z.string().min(1).max(50),
+  description: z.string().min(1).optional(),
+  location: z.string().min(1),
+  eventDate: z.coerce.date("Correct datetime format is : YYYY-MM-DDTHH:mm:ssZ"),
+  imageUrl: z.string().optional(),
+  category: z.object({
+    id: z.uuid(),
+  }),
+});
+
 export type QueryParamsDto = z.infer<typeof QueryParamsSchema>;
+export type CreateEventDto = z.infer<typeof CreateEventSchema>;
 
 export type EventResponseDto = {
   id: string;

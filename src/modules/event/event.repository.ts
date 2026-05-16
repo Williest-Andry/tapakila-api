@@ -1,6 +1,41 @@
 import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../config/prisma.js";
 
+const eventWithRelations = {
+  include: {
+    category: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+    organizer: {
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      },
+    },
+    ticketTypes: {
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        totalSeats: true,
+        maxPerUser: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    },
+  },
+} satisfies Prisma.EventDefaultArgs;
+
+export type EventWithRelations = Prisma.EventGetPayload<
+  typeof eventWithRelations
+>;
+
 export async function findAll(
   userId: string,
   userRole: string,
@@ -22,33 +57,13 @@ export async function findAll(
     take: limit,
     orderBy: { createdAt: "desc" },
     where: where,
-    include: {
-      category: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      organizer: {
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-        },
-      },
-      ticketTypes: {
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          totalSeats: true,
-          maxPerUser: true,
-          isActive: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
-    },
+    include: eventWithRelations.include,
+  });
+}
+
+export async function create(event: Prisma.EventCreateInput) {
+  return prisma.event.create({
+    data: event,
+    include: eventWithRelations.include,
   });
 }

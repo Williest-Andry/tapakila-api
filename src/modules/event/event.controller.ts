@@ -14,3 +14,15 @@ export async function findAll(req: Request, res: Response, next: NextFunction) {
     next(e);
   }
 }
+
+export async function create(req: Request, res: Response, next: NextFunction) {
+  try {
+    const organizerId = req.user?.userId as string;
+    const eventTocreate = req.body;
+
+    const createdEvent = await eventService.create(organizerId, eventTocreate);
+    res.status(201).json(createdEvent);
+  } catch (e) {
+    next(e);
+  }
+}
