@@ -98,6 +98,7 @@ model Booking {
   id        String            @id @default(uuid())
   status    ReservationStatus @default(CONFIRMED)
   createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -106,6 +107,8 @@ model Booking {
   event   Event  @relation(fields: [eventId], references: [id])
 
   bookingItems BookingItem[]
+
+  @@unique([userId, eventId])
 }
 
 model BookingItem {

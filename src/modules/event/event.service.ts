@@ -111,7 +111,7 @@ export async function create(
       e.code === "P2002"
     ) {
       throw new ConflictError(
-        "You already have created event with the same title, date and location",
+        "You already have created event with the same title, date and location. This event",
       );
     }
 
