@@ -4,7 +4,7 @@ import { UserRole } from "../../generated/prisma/enums.js";
 
 export type JwtPayload = {
   userId: string;
-  role: "USER" | "ORGANISER" | "ADMIN" | UserRole;
+  role: "USER" | "ORGANIZER" | "ADMIN" | UserRole;
 };
 
 export function generateAccessToken(payload: JwtPayload): string {
