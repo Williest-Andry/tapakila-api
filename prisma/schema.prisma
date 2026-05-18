@@ -79,15 +79,14 @@ model Event {
 }
 
 model TicketType {
-  id             String   @id @default(uuid())
-  name           String
-  price          Decimal  @db.Decimal(10, 2)
-  totalSeats     Int
-  availableSeats Int
-  maxPerUser     Int      @default(5)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id         String   @id @default(uuid())
+  name       String   @unique
+  price      Decimal  @db.Decimal(10, 2)
+  totalSeats Int
+  maxPerUser Int      @default(5)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   eventId String
   event   Event  @relation(fields: [eventId], references: [id])
