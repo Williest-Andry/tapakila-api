@@ -11,6 +11,7 @@ import {
 } from "./event.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
+import ticketTypeRoutes from "../ticket-type/ticket-type.route.js";
 
 const eventRoutes = Router();
 
@@ -35,5 +36,7 @@ eventRoutes.patch(
   validateBody(UpdateEventStatusSchema),
   eventController.updateStatus,
 );
+
+eventRoutes.use("/:eventId/ticket-types", ticketTypeRoutes);
 
 export default eventRoutes;
