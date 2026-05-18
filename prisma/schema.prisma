@@ -80,7 +80,7 @@ model Event {
 
 model TicketType {
   id         String   @id @default(uuid())
-  name       String
+  name       String   @unique
   price      Decimal  @db.Decimal(10, 2)
   totalSeats Int
   maxPerUser Int      @default(5)
