@@ -3,12 +3,11 @@ import * as eventService from "./event.service.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const userId = req.query.userId as string;
-    const userRole = req.query.userRole as any;
-    const page = req.query.page as any;
-    const limit = req.query.page as any;
+    const filters = req.query as any;
+    const userId = req.user?.userId ?? null;
+    const userRole = req.user?.role ?? null;
 
-    const events = await eventService.findAll(userId, userRole, page, limit);
+    const events = await eventService.findAll(userId, userRole, filters);
     res.status(200).json(events);
   } catch (e) {
     next(e);

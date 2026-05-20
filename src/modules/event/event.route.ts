@@ -6,18 +6,20 @@ import {
 } from "../../middlewares/validate.js";
 import {
   CreateEventSchema,
-  QueryParamsSchema,
+  EventFiltersSchema,
   UpdateEventStatusSchema,
 } from "./event.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
 import ticketTypeRoutes from "../ticket-type/ticket-type.route.js";
+import { authenticateOptional } from "../../middlewares/authenticateOptional.js";
 
 const eventRoutes = Router();
 
 eventRoutes.get(
   "/",
-  validateQueryParams(QueryParamsSchema),
+  authenticateOptional,
+  validateQueryParams(EventFiltersSchema),
   eventController.findAll,
 );
 

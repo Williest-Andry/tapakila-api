@@ -2,18 +2,6 @@ import z from "zod";
 import { EventStatus } from "../../../generated/prisma/enums.js";
 import { Decimal } from "../../../generated/prisma/internal/prismaNamespace.js";
 
-export const QueryParamsSchema = z.object({
-  userId: z.uuid("userId must be UUID").optional(),
-  userRole: z
-    .enum(
-      ["USER", "ORGANIZER", "ADMIN"],
-      "userRole must be USER or ORGANIZER or ADMIN",
-    )
-    .optional(),
-  page: z.int("page must be positive").optional(),
-  limit: z.int("limit must be positive").optional(),
-});
-
 export const CreateEventSchema = z.object({
   title: z.string().min(1).max(50),
   description: z.string().min(1).optional(),
@@ -29,9 +17,25 @@ export const UpdateEventStatusSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "CANCELLED"]),
 });
 
-export type QueryParamsDto = z.infer<typeof QueryParamsSchema>;
+export const EventFiltersSchema = z.object({
+  search: z.string().optional(),
+  categoryId: z.uuid().optional(),
+  location: z.string().optional(),
+  organizerId: z.uuid().optional(),
+  status: z.enum(["DRAFT", "PUBLISHED", "CANCELLED"]).optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
+  priceMin: z.coerce.number().nonnegative().optional(),
+  priceMax: z.coerce.number().positive().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  sortBy: z.enum(["eventDate", "createdAt", "title"]).default("eventDate"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
+});
+
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
 export type UpdateEventStatusDto = z.infer<typeof UpdateEventStatusSchema>;
+export type EventFiltersDto = z.infer<typeof EventFiltersSchema>;
 
 export type EventResponseDto = {
   id: string;

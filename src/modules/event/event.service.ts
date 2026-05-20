@@ -2,10 +2,13 @@ import * as eventRepository from "./event.repository.js";
 import { EventStatus, UserRole } from "../../../generated/prisma/enums.js";
 import {
   CreateEventDto,
+  EventFiltersDto,
   EventResponseDto,
   UpdateEventStatusDto,
 } from "./event.dto.js";
 import * as categoryRepository from "./category.repository.js";
+import * as bookingRepository from "../booking/booking.repository.js";
+import * as ticketTypeRepository from "../ticket-type/ticket-type.repository.js";
 import {
   BadRequestError,
   ConflictError,
@@ -55,16 +58,12 @@ function toEventResponse(
 }
 
 export async function findAll(
-  userId: string,
-  userRole: UserRole,
-  page?: number,
-  limit?: number,
+  userId: string | null,
+  userRole: string | null,
+  filters: EventFiltersDto,
 ): Promise<EventResponseDto[]> {
-  const events = await eventRepository.findAll(userId, userRole, page, limit);
-
-  const responseEvents = events.map(toEventResponse);
-
-  return responseEvents;
+  const events = await eventRepository.findAll(userId, userRole, filters);
+  return events.map(toEventResponse);
 }
 
 export async function create(
@@ -134,7 +133,7 @@ export async function updateStatus(
   eventStatusDto: UpdateEventStatusDto,
   userId: string,
   userRole: UserRole,
-) {
+): Promise<EventResponseDto> {
   const event = await eventRepository.findById(eventId);
   if (!event) throw new NotFoundError(`event with id : ${eventId}`);
 
@@ -142,20 +141,30 @@ export async function updateStatus(
     throw new ForbiddenError();
   }
 
-  const allowedStatus = allowedEventStatusTransitions[event.status];
-  if (!allowedStatus.includes(eventStatusDto.status)) {
+  const allowedTransitions = allowedEventStatusTransitions[event.status];
+  if (!allowedTransitions.includes(eventStatusDto.status as EventStatus)) {
     throw new BadRequestError(
       `Cannot transition from ${event.status} to ${eventStatusDto.status}`,
     );
   }
 
-  // pub -> can => cancelled bookings and ticket
+  if (event.status === "PUBLISHED" && eventStatusDto.status === "DRAFT") {
+    const hasActiveBookings = await bookingRepository.existsForEvent(eventId);
+    if (hasActiveBookings) {
+      throw new BadRequestError(
+        "Cannot unpublish an event with confirmed bookings. Cancel it instead.",
+      );
+    }
+  }
 
-  // pub -> draft => not allowed if bookings exist
+  if (eventStatusDto.status === "CANCELLED") {
+    await bookingRepository.cancelAllForEvent(eventId);
+    await ticketTypeRepository.deactivateAllForEvent(eventId);
+  }
 
-  event.status = eventStatusDto.status;
-
-  const updatedEvent = await eventRepository.update(eventId, event);
+  const updatedEvent = await eventRepository.update(eventId, {
+    status: eventStatusDto.status,
+  });
 
   return toEventResponse(updatedEvent);
 }
