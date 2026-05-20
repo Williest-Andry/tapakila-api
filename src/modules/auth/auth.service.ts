@@ -6,7 +6,6 @@ import {
 } from "../../config/jwt.js";
 import {
   LoginDto,
-  ProfileDto,
   RegisterDto,
   RegisterResponseDto,
   TokenResponseDto,
@@ -14,11 +13,13 @@ import {
 import * as authRepository from "./auth.repository.js";
 import * as userRepository from "../user/user.repository.js";
 import {
+  BadRequestError,
   ConflictError,
   NotFoundError,
   UnauthorizedError,
 } from "../../common/errors/index.js";
 import * as bcrypt from "bcrypt";
+import toUserResponse from "../../utils/to-user-response.js";
 
 export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
   const user = await userRepository.findByEmail(loginDto.email);
@@ -85,11 +86,7 @@ export async function register(
   });
 
   const userRegisterResponse = {
-    data: {
-      email: createUserDto.email,
-      firstName: createUserDto.firstName,
-      lastName: createUserDto.lastName,
-    },
+    data: toUserResponse(createdUser),
     tokens: {
       accessToken,
       refreshToken,
@@ -99,19 +96,11 @@ export async function register(
   return userRegisterResponse;
 }
 
-export async function getProfile(userId: string): Promise<ProfileDto> {
+export async function getProfile(userId: string) {
   const existingUser = await userRepository.findById(userId);
   if (!existingUser) throw new NotFoundError("user");
 
-  const userProfile: ProfileDto = {
-    email: existingUser.email,
-    firstName: existingUser.firstName,
-    lastName: existingUser.lastName,
-    createdAt: existingUser.createdAt,
-    role: existingUser.role,
-  };
-
-  return userProfile;
+  return toUserResponse(existingUser);
 }
 
 export async function refreshToken(
