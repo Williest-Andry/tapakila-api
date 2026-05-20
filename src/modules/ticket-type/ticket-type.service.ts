@@ -13,6 +13,7 @@ import {
   TicketTypeResponseDto,
 } from "./ticket-type.dto.js";
 import { TicketTypeWithAvailability } from "./ticket-type.repository.js";
+import AppError from "../../utils/AppError.js";
 
 function toTicketTypeResponse(
   tt: TicketTypeWithAvailability,
@@ -60,23 +61,32 @@ export async function create(
   requesterRole: string,
   dto: CreateTicketTypeDto,
 ): Promise<TicketTypeResponseDto> {
-  await accessibleEvent(eventId, requesterId, requesterRole);
+  try {
+    await accessibleEvent(eventId, requesterId, requesterRole);
 
-  const existingTicketType = await ticketTypeRepository.findByName(dto.name);
-  if (existingTicketType) {
-    throw new ConflictError(`ticket type with name : ${dto.name}`);
+    const data: Prisma.TicketTypeUncheckedCreateInput = {
+      name: dto.name,
+      price: dto.price,
+      totalSeats: dto.totalSeats,
+      maxPerUser: dto.maxPerUser,
+      eventId,
+    };
+
+    const created = await ticketTypeRepository.create(data);
+
+    return toTicketTypeResponse(created);
+  } catch (e) {
+    if (
+      e instanceof Prisma.PrismaClientKnownRequestError &&
+      e.code === "P2002"
+    ) {
+      throw new ConflictError(
+        "You already have created active ticket type with the same name and event. Ticket type",
+      );
+    }
+
+    throw new AppError("Unexpected internal error", 500);
   }
-
-  const data: Prisma.TicketTypeUncheckedCreateInput = {
-    name: dto.name,
-    price: dto.price,
-    totalSeats: dto.totalSeats,
-    maxPerUser: dto.maxPerUser,
-    eventId,
-  };
-
-  const created = await ticketTypeRepository.create(data);
-  return toTicketTypeResponse(created);
 }
 
 export async function update(
