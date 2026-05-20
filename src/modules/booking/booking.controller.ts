@@ -57,3 +57,20 @@ export async function cancel(
     next(e);
   }
 }
+
+export async function updateItem(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const booking = await bookingService.updateItem(
+      req.params.id,
+      req.user!.userId,
+      req.body,
+    );
+    res.status(200).json(booking);
+  } catch (e) {
+    next(e);
+  }
+}

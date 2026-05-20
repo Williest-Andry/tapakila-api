@@ -7,6 +7,7 @@ import {
 import {
   CreateBookingSchema,
   ReservationFiltersSchema,
+  UpdateBookingItemSchema,
 } from "./booking.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
@@ -31,5 +32,12 @@ bookingRoutes.post(
 );
 
 bookingRoutes.patch("/:id/cancel", bookingController.cancel);
+
+bookingRoutes.patch(
+  "/:id",
+  authorize("USER", "ORGANIZER"),
+  validateBody(UpdateBookingItemSchema),
+  bookingController.updateItem,
+);
 
 export default bookingRoutes;

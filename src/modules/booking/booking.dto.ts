@@ -19,8 +19,14 @@ export const ReservationFiltersSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+export const UpdateBookingItemSchema = z.object({
+  ticketTypeId: z.string().uuid("Invalid ticket type id"),
+  quantity: z.number().int().positive("Quantity must be positive"),
+});
+
 export type CreateBookingDto = z.infer<typeof CreateBookingSchema>;
 export type ReservationFiltersDto = z.infer<typeof ReservationFiltersSchema>;
+export type UpdateBookingItemDto = z.infer<typeof UpdateBookingItemSchema>;
 
 export interface BookingItemResponseDto {
   id: string;
