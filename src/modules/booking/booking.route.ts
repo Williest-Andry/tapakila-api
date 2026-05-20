@@ -5,8 +5,8 @@ import {
   validateQueryParams,
 } from "../../middlewares/validate.js";
 import {
+  BookingFiltersSchema,
   CreateBookingSchema,
-  ReservationFiltersSchema,
   UpdateBookingItemSchema,
 } from "./booking.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
@@ -18,7 +18,7 @@ bookingRoutes.use(authenticate);
 
 bookingRoutes.get(
   "/",
-  validateQueryParams(ReservationFiltersSchema),
+  validateQueryParams(BookingFiltersSchema),
   bookingController.findAll,
 );
 

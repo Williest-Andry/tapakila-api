@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import * as bookingService from "./booking.service.js";
-import { ReservationFiltersSchema } from "./booking.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {

@@ -8,15 +8,14 @@ import {
 import * as bookingRepository from "./booking.repository.js";
 import * as eventRepository from "../event/event.repository.js";
 import {
+  BookingFiltersDto,
   BookingResponseDto,
   CreateBookingDto,
-  ReservationFiltersDto,
   UpdateBookingItemDto,
 } from "./booking.dto.js";
 import { BookingWithRelations } from "./booking.repository.js";
 import { Prisma } from "../../../generated/prisma/client.js";
 import AppError from "../../utils/AppError.js";
-import * as ticketTypeRepository from "../ticket-type/ticket-type.repository.js";
 
 function toBookingResponse(booking: BookingWithRelations): BookingResponseDto {
   const items = booking.bookingItems.map((item) => ({
@@ -49,7 +48,7 @@ function toBookingResponse(booking: BookingWithRelations): BookingResponseDto {
 export async function findAll(
   requesterId: string,
   requesterRole: string,
-  filters: ReservationFiltersDto,
+  filters: BookingFiltersDto,
 ): Promise<BookingResponseDto[]> {
   const bookings = await bookingRepository.findAll(
     requesterId,
