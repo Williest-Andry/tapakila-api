@@ -81,7 +81,7 @@ export async function create(
       e.code === "P2002"
     ) {
       throw new ConflictError(
-        "You already have created active ticket type with the same name and event. Ticket type",
+        `You already have created ticket type with the same name and event. ${dto.name}`,
       );
     }
 
