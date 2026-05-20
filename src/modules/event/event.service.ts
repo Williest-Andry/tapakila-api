@@ -2,6 +2,7 @@ import * as eventRepository from "./event.repository.js";
 import { EventStatus, UserRole } from "../../../generated/prisma/enums.js";
 import {
   CreateEventDto,
+  EventFiltersDto,
   EventResponseDto,
   UpdateEventStatusDto,
 } from "./event.dto.js";
@@ -55,16 +56,12 @@ function toEventResponse(
 }
 
 export async function findAll(
-  userId: string,
-  userRole: UserRole,
-  page?: number,
-  limit?: number,
+  userId: string | null,
+  userRole: string | null,
+  filters: EventFiltersDto,
 ): Promise<EventResponseDto[]> {
-  const events = await eventRepository.findAll(userId, userRole, page, limit);
-
-  const responseEvents = events.map(toEventResponse);
-
-  return responseEvents;
+  const events = await eventRepository.findAll(userId, userRole, filters);
+  return events.map(toEventResponse);
 }
 
 export async function create(
