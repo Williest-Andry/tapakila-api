@@ -51,7 +51,7 @@ export async function findById(
 export async function findByName(
   ticketTypeName: string,
 ): Promise<TicketTypeWithAvailability | null> {
-  const tt = await prisma.ticketType.findUnique({
+  const tt = await prisma.ticketType.findFirst({
     where: { name: ticketTypeName },
   });
   if (!tt) return null;

@@ -80,7 +80,7 @@ model Event {
 
 model TicketType {
   id         String   @id @default(uuid())
-  name       String   @unique
+  name       String
   price      Decimal  @db.Decimal(10, 2)
   totalSeats Int
   maxPerUser Int      @default(5)
@@ -92,6 +92,8 @@ model TicketType {
   event   Event  @relation(fields: [eventId], references: [id])
 
   bookingItems BookingItem[]
+
+  @@unique([name, eventId])
 }
 
 model Booking {
