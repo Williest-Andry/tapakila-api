@@ -32,6 +32,7 @@ model User {
   lastName     String
   role         UserRole @default(USER)
   createdAt    DateTime @default(now())
+  isActive     Boolean  @default(true)
 
   events        Event[]
   bookings      Booking[]
