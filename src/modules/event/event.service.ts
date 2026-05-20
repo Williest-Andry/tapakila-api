@@ -115,6 +115,10 @@ export async function create(
       );
     }
 
+    if (e instanceof AppError) {
+      throw e;
+    }
+
     throw new AppError("Unexpected internal error", 500);
   }
 }
