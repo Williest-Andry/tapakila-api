@@ -1,9 +1,10 @@
-import { Prisma, User } from "../../../generated/prisma/client.js";
+import { Prisma } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateUserDto,
   UpdateUserByAdminDto,
   UpdateUserDto,
+  UserFiltersDto,
   UserResponseDto,
 } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
@@ -12,10 +13,9 @@ import * as authRepository from "../auth/auth.repository.js";
 import toUserResponse from "../../utils/to-user-response.js";
 
 export async function findAll(
-  page: number,
-  limit: number,
+  filters: UserFiltersDto,
 ): Promise<UserResponseDto[]> {
-  const users = await userRepository.findAll(page, limit);
+  const users = await userRepository.findAll(filters);
 
   const usersResponse: UserResponseDto[] = users.map(toUserResponse);
 

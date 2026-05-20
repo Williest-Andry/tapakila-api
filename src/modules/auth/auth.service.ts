@@ -13,7 +13,6 @@ import {
 import * as authRepository from "./auth.repository.js";
 import * as userRepository from "../user/user.repository.js";
 import {
-  BadRequestError,
   ConflictError,
   NotFoundError,
   UnauthorizedError,
