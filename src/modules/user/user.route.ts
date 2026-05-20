@@ -43,18 +43,18 @@ userRoutes.post(
 );
 
 userRoutes.patch(
+  "/:id/deactivate",
+  authenticate,
+  authorize("ADMIN"),
+  userController.deactivate,
+);
+
+userRoutes.patch(
   "/:id",
   authenticate,
   authorize("ADMIN"),
   validateBody(UpdateUserByAdminSchema),
   userController.update,
-);
-
-userRoutes.delete(
-  "/:id",
-  authenticate,
-  authorize("ADMIN"),
-  userController.deleteById,
 );
 
 export default userRoutes;

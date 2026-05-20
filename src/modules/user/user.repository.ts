@@ -41,10 +41,13 @@ export async function findById(userId: string) {
   });
 }
 
-export async function deleteById(userId: string) {
-  return await prisma.user.delete({
-    where: {
-      id: userId,
+export async function deactivate(userId: string) {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive: false,
+      deletedAt: new Date(),
+      email: `deleted_${userId}@deleted.com`,
     },
   });
 }
