@@ -1,6 +1,6 @@
 import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../config/prisma.js";
-import { ReservationFiltersDto } from "./booking.dto.js";
+import { BookingFiltersDto } from "./booking.dto.js";
 
 const bookingWithRelations = {
   include: {
@@ -27,7 +27,7 @@ export type BookingWithRelations = Prisma.BookingGetPayload<
 export async function findAll(
   requesterId: string,
   requesterRole: string,
-  filters: ReservationFiltersDto,
+  filters: BookingFiltersDto,
 ): Promise<BookingWithRelations[]> {
   let where = {};
 

@@ -8,9 +8,10 @@ import {
 import * as bookingRepository from "./booking.repository.js";
 import * as eventRepository from "../event/event.repository.js";
 import {
+  BookingFiltersDto,
   BookingResponseDto,
   CreateBookingDto,
-  ReservationFiltersDto,
+  UpdateBookingItemDto,
 } from "./booking.dto.js";
 import { BookingWithRelations } from "./booking.repository.js";
 import { Prisma } from "../../../generated/prisma/client.js";
@@ -47,7 +48,7 @@ function toBookingResponse(booking: BookingWithRelations): BookingResponseDto {
 export async function findAll(
   requesterId: string,
   requesterRole: string,
-  filters: ReservationFiltersDto,
+  filters: BookingFiltersDto,
 ): Promise<BookingResponseDto[]> {
   const bookings = await bookingRepository.findAll(
     requesterId,
@@ -210,4 +211,89 @@ export async function cancel(
   const cancelled = await bookingRepository.cancel(bookingId);
 
   return toBookingResponse(cancelled);
+}
+
+export async function updateItem(
+  bookingId: string,
+  requesterId: string,
+  dto: UpdateBookingItemDto,
+): Promise<BookingResponseDto> {
+  const booking = await bookingRepository.findById(bookingId);
+  if (!booking) throw new NotFoundError(`Booking with id ${bookingId}`);
+
+  if (booking.user.id !== requesterId) throw new ForbiddenError();
+
+  if (booking.status === "CANCELLED") {
+    throw new BadRequestError("Cannot modify a cancelled booking");
+  }
+
+  if (booking.event.eventDate < new Date()) {
+    throw new BadRequestError("Cannot modify a booking for a past event");
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const bookingItem = await tx.bookingItem.findFirst({
+      where: { bookingId, ticketTypeId: dto.ticketTypeId },
+    });
+    if (!bookingItem) {
+      throw new NotFoundError(
+        `TicketType with id: ${dto.ticketTypeId} in this booking`,
+      );
+    }
+
+    const ticketType = await tx.ticketType.findUnique({
+      where: { id: dto.ticketTypeId },
+    });
+    if (!ticketType || !ticketType.isActive) {
+      throw new BadRequestError("Ticket type is no longer available");
+    }
+
+    const diff = dto.quantity - bookingItem.quantity;
+
+    if (diff > 0) {
+      const bookedSeats = await tx.bookingItem.aggregate({
+        where: {
+          ticketTypeId: dto.ticketTypeId,
+          booking: { status: "CONFIRMED" },
+        },
+        _sum: { quantity: true },
+      });
+      const availableSeats =
+        ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
+
+      if (availableSeats < diff) {
+        throw new BadRequestError(
+          `Not enough seats available (${availableSeats} remaining)`,
+        );
+      }
+
+      const totalAfterUpdate = bookingItem.quantity + diff;
+      if (totalAfterUpdate > ticketType.maxPerUser) {
+        throw new BadRequestError(
+          `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
+        );
+      }
+    }
+
+    await tx.bookingItem.update({
+      where: { id: bookingItem.id },
+      data: { quantity: dto.quantity },
+    });
+
+    return await tx.booking.update({
+      where: { id: bookingId },
+      data: { updatedAt: new Date() },
+      include: {
+        event: { select: { id: true, title: true, eventDate: true } },
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
+        bookingItems: {
+          include: { ticketType: { select: { id: true, name: true } } },
+        },
+      },
+    });
+  });
+
+  return toBookingResponse(updated);
 }

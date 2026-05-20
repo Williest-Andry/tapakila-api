@@ -12,15 +12,21 @@ export const CreateBookingSchema = z.object({
     .min(1, "At least one item is required"),
 });
 
-export const ReservationFiltersSchema = z.object({
+export const BookingFiltersSchema = z.object({
   eventId: z.uuid().optional(),
   status: z.enum(["CONFIRMED", "CANCELLED"]).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+export const UpdateBookingItemSchema = z.object({
+  ticketTypeId: z.string().uuid("Invalid ticket type id"),
+  quantity: z.number().int().positive("Quantity must be positive"),
+});
+
 export type CreateBookingDto = z.infer<typeof CreateBookingSchema>;
-export type ReservationFiltersDto = z.infer<typeof ReservationFiltersSchema>;
+export type BookingFiltersDto = z.infer<typeof BookingFiltersSchema>;
+export type UpdateBookingItemDto = z.infer<typeof UpdateBookingItemSchema>;
 
 export interface BookingItemResponseDto {
   id: string;

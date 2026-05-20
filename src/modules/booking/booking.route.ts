@@ -5,8 +5,9 @@ import {
   validateQueryParams,
 } from "../../middlewares/validate.js";
 import {
+  BookingFiltersSchema,
   CreateBookingSchema,
-  ReservationFiltersSchema,
+  UpdateBookingItemSchema,
 } from "./booking.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
@@ -17,7 +18,7 @@ bookingRoutes.use(authenticate);
 
 bookingRoutes.get(
   "/",
-  validateQueryParams(ReservationFiltersSchema),
+  validateQueryParams(BookingFiltersSchema),
   bookingController.findAll,
 );
 
@@ -31,5 +32,12 @@ bookingRoutes.post(
 );
 
 bookingRoutes.patch("/:id/cancel", bookingController.cancel);
+
+bookingRoutes.patch(
+  "/:id",
+  authorize("USER", "ORGANIZER"),
+  validateBody(UpdateBookingItemSchema),
+  bookingController.updateItem,
+);
 
 export default bookingRoutes;

@@ -19,7 +19,7 @@ enum EventStatus {
   CANCELLED
 }
 
-enum ReservationStatus {
+enum BookingStatus {
   CONFIRMED
   CANCELLED
 }
@@ -97,10 +97,10 @@ model TicketType {
 }
 
 model Booking {
-  id        String            @id @default(uuid())
-  status    ReservationStatus @default(CONFIRMED)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  id        String        @id @default(uuid())
+  status    BookingStatus @default(CONFIRMED)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

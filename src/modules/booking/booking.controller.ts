@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import * as bookingService from "./booking.service.js";
-import { ReservationFiltersSchema } from "./booking.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
@@ -51,6 +50,23 @@ export async function cancel(
       req.params.id,
       req.user!.userId,
       req.user!.role,
+    );
+    res.status(200).json(booking);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function updateItem(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const booking = await bookingService.updateItem(
+      req.params.id,
+      req.user!.userId,
+      req.body,
     );
     res.status(200).json(booking);
   } catch (e) {
