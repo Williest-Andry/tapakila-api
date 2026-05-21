@@ -8,6 +8,8 @@ import eventCategoriesRoutes from "./modules/event/category.route.js";
 import bookingRoutes from "./modules/booking/booking.route.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "../doc/swagger-output.json";
 
 const app = express();
 
@@ -29,6 +31,8 @@ app.use("/events", eventRoutes);
 app.use("/event-categories", eventCategoriesRoutes);
 
 app.use("/bookings", bookingRoutes);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(errorHandler);
 
