@@ -104,7 +104,7 @@ export async function create(
     const createdEvent = await eventRepository.create(eventToCreate);
 
     return toEventResponse(createdEvent);
-  } catch (e) {
+  } catch (e: unknown) {
     if (
       e instanceof Prisma.PrismaClientKnownRequestError &&
       e.code === "P2002"

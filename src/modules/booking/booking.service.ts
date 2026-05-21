@@ -27,7 +27,7 @@ function toBookingResponse(booking: BookingWithRelations): BookingResponseDto {
   }));
 
   const totalPrice = items.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
+    (sum: number, item) => sum + item.unitPrice * item.quantity,
     0,
   );
 
@@ -90,91 +90,98 @@ export async function create(
   }
 
   try {
-    const booking = await prisma.$transaction(async (tx) => {
-      const bookingItemsData: {
-        ticketTypeId: string;
-        quantity: number;
-        unitPrice: number;
-      }[] = [];
+    const booking = await prisma.$transaction(
+      async (tx: Prisma.TransactionClient) => {
+        const bookingItemsData: {
+          ticketTypeId: string;
+          quantity: number;
+          unitPrice: number;
+        }[] = [];
 
-      for (const item of dto.items) {
-        const ticketType = await tx.ticketType.findUnique({
-          where: { id: item.ticketTypeId },
-        });
+        for (const item of dto.items) {
+          const ticketType = await tx.ticketType.findUnique({
+            where: { id: item.ticketTypeId },
+          });
 
-        if (!ticketType) {
-          throw new NotFoundError(`TicketType with id ${item.ticketTypeId}`);
-        }
-        if (ticketType.eventId !== dto.eventId) {
-          throw new BadRequestError(
-            `TicketType ${item.ticketTypeId} does not belong to this event`,
+          if (!ticketType) {
+            throw new NotFoundError(`TicketType with id ${item.ticketTypeId}`);
+          }
+          if (ticketType.eventId !== dto.eventId) {
+            throw new BadRequestError(
+              `TicketType ${item.ticketTypeId} does not belong to this event`,
+            );
+          }
+          if (!ticketType.isActive) {
+            throw new BadRequestError(
+              `Ticket type "${ticketType.name}" is no longer available`,
+            );
+          }
+
+          const alreadyBooked = await bookingRepository.countUserTicketsForType(
+            userId,
+            item.ticketTypeId,
           );
-        }
-        if (!ticketType.isActive) {
-          throw new BadRequestError(
-            `Ticket type "${ticketType.name}" is no longer available`,
-          );
-        }
+          if (alreadyBooked + item.quantity > ticketType.maxPerUser) {
+            throw new BadRequestError(
+              `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
+            );
+          }
 
-        const alreadyBooked = await bookingRepository.countUserTicketsForType(
-          userId,
-          item.ticketTypeId,
-        );
-        if (alreadyBooked + item.quantity > ticketType.maxPerUser) {
-          throw new BadRequestError(
-            `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
-          );
-        }
-
-        const bookedSeats = await tx.bookingItem.aggregate({
-          where: {
-            ticketTypeId: item.ticketTypeId,
-            booking: { status: "CONFIRMED" },
-          },
-          _sum: { quantity: true },
-        });
-        const availableSeats =
-          ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
-        if (availableSeats < item.quantity) {
-          throw new BadRequestError(
-            `Not enough seats for ticket type "${ticketType.name}" (${availableSeats} remaining)`,
-          );
-        }
-
-        bookingItemsData.push({
-          ticketTypeId: item.ticketTypeId,
-          quantity: item.quantity,
-          unitPrice: Number(ticketType.price),
-        });
-      }
-
-      return await tx.booking.create({
-        data: {
-          userId,
-          eventId: dto.eventId,
-          status: "CONFIRMED",
-          bookingItems: {
-            create: bookingItemsData.map((item) => ({
+          const bookedSeats = await tx.bookingItem.aggregate({
+            where: {
               ticketTypeId: item.ticketTypeId,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice,
-            })),
+              booking: { status: "CONFIRMED" },
+            },
+            _sum: { quantity: true },
+          });
+          const availableSeats =
+            ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
+          if (availableSeats < item.quantity) {
+            throw new BadRequestError(
+              `Not enough seats for ticket type "${ticketType.name}" (${availableSeats} remaining)`,
+            );
+          }
+
+          bookingItemsData.push({
+            ticketTypeId: item.ticketTypeId,
+            quantity: item.quantity,
+            unitPrice: Number(ticketType.price),
+          });
+        }
+
+        return await tx.booking.create({
+          data: {
+            userId,
+            eventId: dto.eventId,
+            status: "CONFIRMED",
+            bookingItems: {
+              create: bookingItemsData.map((item) => ({
+                ticketTypeId: item.ticketTypeId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+              })),
+            },
           },
-        },
-        include: {
-          event: { select: { id: true, title: true, eventDate: true } },
-          user: {
-            select: { id: true, email: true, firstName: true, lastName: true },
+          include: {
+            event: { select: { id: true, title: true, eventDate: true } },
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+            bookingItems: {
+              include: { ticketType: { select: { id: true, name: true } } },
+            },
           },
-          bookingItems: {
-            include: { ticketType: { select: { id: true, name: true } } },
-          },
-        },
-      });
-    });
+        });
+      },
+    );
 
     return toBookingResponse(booking);
-  } catch (e) {
+  } catch (e: unknown) {
     if (
       e instanceof Prisma.PrismaClientKnownRequestError &&
       e.code === "P2002"
@@ -231,69 +238,71 @@ export async function updateItem(
     throw new BadRequestError("Cannot modify a booking for a past event");
   }
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const bookingItem = await tx.bookingItem.findFirst({
-      where: { bookingId, ticketTypeId: dto.ticketTypeId },
-    });
-    if (!bookingItem) {
-      throw new NotFoundError(
-        `TicketType with id: ${dto.ticketTypeId} in this booking`,
-      );
-    }
-
-    const ticketType = await tx.ticketType.findUnique({
-      where: { id: dto.ticketTypeId },
-    });
-    if (!ticketType || !ticketType.isActive) {
-      throw new BadRequestError("Ticket type is no longer available");
-    }
-
-    const diff = dto.quantity - bookingItem.quantity;
-
-    if (diff > 0) {
-      const bookedSeats = await tx.bookingItem.aggregate({
-        where: {
-          ticketTypeId: dto.ticketTypeId,
-          booking: { status: "CONFIRMED" },
-        },
-        _sum: { quantity: true },
+  const updated = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const bookingItem = await tx.bookingItem.findFirst({
+        where: { bookingId, ticketTypeId: dto.ticketTypeId },
       });
-      const availableSeats =
-        ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
-
-      if (availableSeats < diff) {
-        throw new BadRequestError(
-          `Not enough seats available (${availableSeats} remaining)`,
+      if (!bookingItem) {
+        throw new NotFoundError(
+          `TicketType with id: ${dto.ticketTypeId} in this booking`,
         );
       }
 
-      const totalAfterUpdate = bookingItem.quantity + diff;
-      if (totalAfterUpdate > ticketType.maxPerUser) {
-        throw new BadRequestError(
-          `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
-        );
+      const ticketType = await tx.ticketType.findUnique({
+        where: { id: dto.ticketTypeId },
+      });
+      if (!ticketType || !ticketType.isActive) {
+        throw new BadRequestError("Ticket type is no longer available");
       }
-    }
 
-    await tx.bookingItem.update({
-      where: { id: bookingItem.id },
-      data: { quantity: dto.quantity },
-    });
+      const diff = dto.quantity - bookingItem.quantity;
 
-    return await tx.booking.update({
-      where: { id: bookingId },
-      data: { updatedAt: new Date() },
-      include: {
-        event: { select: { id: true, title: true, eventDate: true } },
-        user: {
-          select: { id: true, email: true, firstName: true, lastName: true },
+      if (diff > 0) {
+        const bookedSeats = await tx.bookingItem.aggregate({
+          where: {
+            ticketTypeId: dto.ticketTypeId,
+            booking: { status: "CONFIRMED" },
+          },
+          _sum: { quantity: true },
+        });
+        const availableSeats =
+          ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
+
+        if (availableSeats < diff) {
+          throw new BadRequestError(
+            `Not enough seats available (${availableSeats} remaining)`,
+          );
+        }
+
+        const totalAfterUpdate = bookingItem.quantity + diff;
+        if (totalAfterUpdate > ticketType.maxPerUser) {
+          throw new BadRequestError(
+            `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
+          );
+        }
+      }
+
+      await tx.bookingItem.update({
+        where: { id: bookingItem.id },
+        data: { quantity: dto.quantity },
+      });
+
+      return await tx.booking.update({
+        where: { id: bookingId },
+        data: { updatedAt: new Date() },
+        include: {
+          event: { select: { id: true, title: true, eventDate: true } },
+          user: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+          bookingItems: {
+            include: { ticketType: { select: { id: true, name: true } } },
+          },
         },
-        bookingItems: {
-          include: { ticketType: { select: { id: true, name: true } } },
-        },
-      },
-    });
-  });
+      });
+    },
+  );
 
   return toBookingResponse(updated);
 }

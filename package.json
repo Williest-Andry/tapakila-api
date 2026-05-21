@@ -5,9 +5,9 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
     "swagger": "tsx swagger.ts"
   },
   "author": "",
