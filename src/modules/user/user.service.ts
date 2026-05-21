@@ -1,25 +1,21 @@
-import { Prisma, User } from "../../../generated/prisma/client.js";
+import { Prisma } from "../../../generated/prisma/client.js";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateUserDto,
   UpdateUserByAdminDto,
   UpdateUserDto,
+  UserFiltersDto,
   UserResponseDto,
 } from "./user.dto.js";
 import * as userRepository from "./user.repository.js";
 import * as bcrypt from "bcrypt";
 import * as authRepository from "../auth/auth.repository.js";
-
-function toUserResponse(user: User): UserResponseDto {
-  const { passwordHash, ...safeUser } = user;
-  return safeUser;
-}
+import toUserResponse from "../../utils/to-user-response.js";
 
 export async function findAll(
-  page: number,
-  limit: number,
+  filters: UserFiltersDto,
 ): Promise<UserResponseDto[]> {
-  const users = await userRepository.findAll(page, limit);
+  const users = await userRepository.findAll(filters);
 
   const usersResponse: UserResponseDto[] = users.map(toUserResponse);
 
@@ -86,14 +82,6 @@ export async function update(
   return toUserResponse(updatedUser);
 }
 
-export async function deleteById(userId: string): Promise<UserResponseDto> {
-  await findById(userId);
-
-  const deletedUser = await userRepository.deleteById(userId);
-
-  return toUserResponse(deletedUser);
-}
-
 export async function updateUserProfile(
   userId: string,
   userDto: UpdateUserDto,
@@ -130,4 +118,19 @@ export async function toOrganizer(userId: string): Promise<UserResponseDto> {
   await authRepository.deleteAllUserRefreshTokens(userId);
 
   return toUserResponse(organizer);
+}
+
+export async function deactivate(userId: string): Promise<UserResponseDto> {
+  const user = await userRepository.findById(userId);
+  if (!user) throw new NotFoundError(`User with id ${userId}`);
+
+  if (!user.isActive) {
+    throw new ConflictError("deactivated and");
+  }
+
+  await authRepository.deleteAllUserRefreshTokens(userId);
+
+  const deactivated = await userRepository.deactivate(userId);
+
+  return toUserResponse(deactivated);
 }

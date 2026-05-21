@@ -4,9 +4,7 @@ import { CreateUserDto } from "./user.dto.js";
 
 export async function findAll(req: Request, res: Response, next: NextFunction) {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const users = await userService.findAll(page, limit);
+    const users = await userService.findAll(req.query as any);
     res.status(200).json(users);
   } catch (e) {
     next(e);
@@ -52,20 +50,6 @@ export async function update(
   }
 }
 
-export async function deleteById(
-  req: Request<{ id: string }>,
-  res: Response,
-  next: NextFunction,
-) {
-  try {
-    const userId = req.params.id;
-    const deletedUser = await userService.deleteById(userId);
-    res.status(200).json(deletedUser);
-  } catch (e) {
-    next(e);
-  }
-}
-
 export async function updateUserProfile(
   req: Request,
   res: Response,
@@ -93,6 +77,19 @@ export async function toOrganizer(
       organizer,
       message: "[IMPORTANT] Please log in again to apply changes !",
     });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function deactivate(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const deactivated = await userService.deactivate(req.params.id);
+    res.status(200).json(deactivated);
   } catch (e) {
     next(e);
   }

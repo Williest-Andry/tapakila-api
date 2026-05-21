@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken, JwtPayload } from "../config/jwt.js";
 import { UnauthorizedError } from "../common/errors/index.js";
+import * as userRepository from "../modules/user/user.repository.js";
 
 declare global {
   namespace Express {
@@ -10,7 +11,7 @@ declare global {
   }
 }
 
-export default function authenticate(
+export default async function authenticate(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -25,6 +26,12 @@ export default function authenticate(
 
   try {
     const decoded = verifyAccessToken(token);
+
+    const user = await userRepository.findById(decoded.userId);
+    if (!user || !user.isActive) {
+      return next(new UnauthorizedError("Account deactivated"));
+    }
+
     req.user = decoded;
     next();
   } catch {

@@ -25,13 +25,15 @@ enum BookingStatus {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   passwordHash String
   firstName    String
   lastName     String
-  role         UserRole @default(USER)
-  createdAt    DateTime @default(now())
+  role         UserRole  @default(USER)
+  createdAt    DateTime  @default(now())
+  isActive     Boolean   @default(true)
+  deletedAt    DateTime?
 
   events        Event[]
   bookings      Booking[]

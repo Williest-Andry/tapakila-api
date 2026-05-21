@@ -22,9 +22,19 @@ export const UpdateUserSchema = z.object({
   lastName: z.string().min(1, "At least one character is required").optional(),
 });
 
+export const UserFiltersSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  role: z.enum(["USER", "ORGANIZER", "ADMIN"]).optional(),
+  isActive: z.stringbool({ truthy: ["true"], falsy: ["false"] }).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+});
+
 export type CreateUserDto = z.infer<typeof CreateUserSchema>;
 export type UpdateUserByAdminDto = z.infer<typeof UpdateUserByAdminSchema>;
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
+export type UserFiltersDto = z.infer<typeof UserFiltersSchema>;
 
 export interface UserResponseDto {
   id: string;

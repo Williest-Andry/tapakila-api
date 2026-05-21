@@ -1,10 +1,34 @@
 import { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../config/prisma.js";
+import { UserFiltersDto } from "./user.dto.js";
 
-export async function findAll(page = 1, limit = 20) {
+export async function findAll(filters: UserFiltersDto) {
+  const where: Prisma.UserWhereInput = {};
+
+  if (filters.firstName) {
+    where.firstName = {
+      contains: filters.firstName,
+      mode: "insensitive",
+    };
+  }
+
+  if (filters.lastName) {
+    where.lastName = {
+      contains: filters.lastName,
+      mode: "insensitive",
+    };
+  }
+
+  if (filters.role) {
+    where.role = filters.role;
+  }
+
+  where.isActive = filters.isActive;
+
   return await prisma.user.findMany({
-    skip: (page - 1) * limit,
-    take: limit,
+    where,
+    skip: (filters.page - 1) * filters.limit,
+    take: filters.limit,
     orderBy: { createdAt: "desc" },
   });
 }
@@ -41,10 +65,13 @@ export async function findById(userId: string) {
   });
 }
 
-export async function deleteById(userId: string) {
-  return await prisma.user.delete({
-    where: {
-      id: userId,
+export async function deactivate(userId: string) {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      isActive: false,
+      deletedAt: new Date(),
+      email: `deleted_${userId}@deleted.com`,
     },
   });
 }

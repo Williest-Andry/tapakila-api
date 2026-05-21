@@ -34,10 +34,3 @@ export type RegisterResponseDto = {
   };
   tokens: TokenResponseDto;
 };
-export type ProfileDto = {
-  email: string;
-  firstName: string;
-  lastName: string;
-  createdAt: Date;
-  role: UserRole;
-};

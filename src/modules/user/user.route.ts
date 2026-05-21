@@ -1,17 +1,27 @@
 import { Router } from "express";
 import * as userController from "./user.controller.js";
-import { validateBody } from "../../middlewares/validate.js";
+import {
+  validateBody,
+  validateQueryParams,
+} from "../../middlewares/validate.js";
 import {
   CreateUserSchema,
   UpdateUserByAdminSchema,
   UpdateUserSchema,
+  UserFiltersSchema,
 } from "./user.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
 import authorize from "../../middlewares/authorize.js";
 
 const userRoutes = Router();
 
-userRoutes.get("/", authenticate, authorize("ADMIN"), userController.findAll);
+userRoutes.get(
+  "/",
+  authenticate,
+  authorize("ADMIN"),
+  validateQueryParams(UserFiltersSchema),
+  userController.findAll,
+);
 
 userRoutes.patch(
   "/me",
@@ -43,18 +53,18 @@ userRoutes.post(
 );
 
 userRoutes.patch(
+  "/:id/deactivate",
+  authenticate,
+  authorize("ADMIN"),
+  userController.deactivate,
+);
+
+userRoutes.patch(
   "/:id",
   authenticate,
   authorize("ADMIN"),
   validateBody(UpdateUserByAdminSchema),
   userController.update,
-);
-
-userRoutes.delete(
-  "/:id",
-  authenticate,
-  authorize("ADMIN"),
-  userController.deleteById,
 );
 
 export default userRoutes;
