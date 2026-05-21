@@ -75,7 +75,7 @@ export async function create(
     const created = await ticketTypeRepository.create(data);
 
     return toTicketTypeResponse(created);
-  } catch (e) {
+  } catch (e: unknown) {
     if (
       e instanceof Prisma.PrismaClientKnownRequestError &&
       e.code === "P2002"
