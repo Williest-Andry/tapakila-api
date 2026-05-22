@@ -1,4 +1,4 @@
-import { Prisma } from "../../generated/prisma/client.js";
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../config/prisma.js";
 import { EventFiltersDto } from "./event.dto.js";
 

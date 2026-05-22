@@ -1,5 +1,5 @@
 import * as eventRepository from "./event.repository.js";
-import { EventStatus, UserRole } from "../../generated/prisma/enums.js";
+import { EventStatus, UserRole } from "@prisma/client";
 import {
   CreateEventDto,
   EventFiltersDto,
@@ -16,7 +16,7 @@ import {
   NotFoundError,
 } from "../../common/errors/index.js";
 import * as userRepository from "../user/user.repository.js";
-import { Prisma } from "../../generated/prisma/client.js";
+import { Prisma } from "@prisma/client";
 import AppError from "../../utils/AppError.js";
 
 function toEventResponse(

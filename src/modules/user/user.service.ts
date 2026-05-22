@@ -1,4 +1,4 @@
-import { Prisma } from "../../generated/prisma/client.js";
+import { Prisma } from "@prisma/client";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateUserDto,
