@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import type { StringValue } from "ms";
-import { UserRole } from "../../generated/prisma/enums.js";
+import { UserRole } from "../generated/prisma/enums.js";
 
 export type JwtPayload = {
   userId: string;
