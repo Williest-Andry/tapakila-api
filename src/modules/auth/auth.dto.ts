@@ -1,5 +1,4 @@
 import z from "zod";
-import { UserRole } from "../../../generated/prisma/enums.js";
 
 export const LoginSchema = z.object({
   email: z.email("Invalid email"),

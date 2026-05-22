@@ -1,6 +1,6 @@
 import z from "zod";
-import { EventStatus } from "../../../generated/prisma/enums.js";
-import { Decimal } from "../../../generated/prisma/internal/prismaNamespace.js";
+import { EventStatus } from "../../generated/prisma/enums.js";
+import { Decimal } from "../../generated/prisma/internal/prismaNamespace.js";
 
 export const CreateEventSchema = z.object({
   title: z.string().min(1).max(50),
