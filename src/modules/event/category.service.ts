@@ -1,4 +1,4 @@
-import { EventCategory } from "../../generated/prisma/client.js";
+import { EventCategory } from "@prisma/client";
 import { ConflictError, NotFoundError } from "../../common/errors/index.js";
 import {
   CreateEventCategoryDto,

@@ -1,5 +1,5 @@
 import z from "zod";
-import { UserRole } from "../../generated/prisma/enums.js";
+import { UserRole } from "@prisma/client";
 
 export const CreateUserSchema = z.object({
   email: z.email("Invalid email"),

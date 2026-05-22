@@ -9,7 +9,7 @@ import bookingRoutes from "./modules/booking/booking.route.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "../doc/swagger-output.json";
+import swaggerDocument from "../doc/swagger-output.json" with { type: "json" };
 
 const app = express();
 
