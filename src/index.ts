@@ -9,7 +9,7 @@ import bookingRoutes from "./modules/booking/booking.route.js";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import swaggerUi from "swagger-ui-express";
-import swaggerDocument from "../doc/swagger-output.json" with { type: "json" };
+import { generateOpenApiDoc } from "./docs/openapi.js";
 
 const app = express();
 
@@ -32,7 +32,9 @@ app.use("/event-categories", eventCategoriesRoutes);
 
 app.use("/bookings", bookingRoutes);
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const openApiDoc = generateOpenApiDoc();
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
+app.get("/api-docs.json", (req, res) => res.json(openApiDoc));
 
 app.use(errorHandler);
 
