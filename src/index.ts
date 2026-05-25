@@ -36,6 +36,7 @@ const openApiDoc = generateOpenApiDoc();
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDoc));
 app.get("/api-docs.json", (req, res) => res.json(openApiDoc));
 
+
 app.use(errorHandler);
 
 export default app;
