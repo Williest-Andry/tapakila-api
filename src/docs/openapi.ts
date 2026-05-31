@@ -45,6 +45,20 @@ const eventIdAndIdParams = z.object({
   id: z.string().uuid(),
 });
 
+const authResponseSchema = z.object({
+  tokens: z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+  }),
+  user: z.object({
+    id: z.uuid(),
+    email: z.email(),
+    firstName: z.string(),
+    lastName: z.string(),
+    role: z.enum(["USER", "ORGANIZER", "ADMIN"]),
+  }),
+});
+
 const tokenResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
@@ -166,7 +180,7 @@ registry.registerPath({
     body: { content: { "application/json": { schema: LoginSchema } } },
   },
   responses: {
-    200: jsonResponse(tokenResponseSchema, "Login successful"),
+    200: jsonResponse(authResponseSchema, "Login successful"),
     ...errorResponses,
   },
 });
@@ -191,13 +205,7 @@ registry.registerPath({
     body: { content: { "application/json": { schema: RegisterSchema } } },
   },
   responses: {
-    201: jsonResponse(
-      z.object({
-        data: userSchema.pick({ email: true, firstName: true, lastName: true }),
-        tokens: tokenResponseSchema,
-      }),
-      "Registration successful",
-    ),
+    201: jsonResponse(authResponseSchema, "Registration successful"),
     ...errorResponses,
   },
 });

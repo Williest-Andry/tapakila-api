@@ -1,3 +1,4 @@
+import { UserRole } from "@prisma/client";
 import z from "zod";
 
 export const LoginSchema = z.object({
@@ -25,11 +26,17 @@ export type TokenResponseDto = {
   accessToken: string;
   refreshToken: string;
 };
-export type RegisterResponseDto = {
-  data: {
+
+export interface AuthResponseDto {
+  tokens: {
+    accessToken: string;
+    refreshToken: string;
+  };
+  user: {
+    id: string;
     email: string;
     firstName: string;
     lastName: string;
+    role: UserRole;
   };
-  tokens: TokenResponseDto;
-};
+}

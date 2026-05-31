@@ -5,9 +5,9 @@ import {
   verifyRefreshToken,
 } from "../../config/jwt.js";
 import {
+  AuthResponseDto,
   LoginDto,
   RegisterDto,
-  RegisterResponseDto,
   TokenResponseDto,
 } from "./auth.dto.js";
 import * as authRepository from "./auth.repository.js";
@@ -19,8 +19,25 @@ import {
 } from "../../common/errors/index.js";
 import * as bcrypt from "bcrypt";
 import toUserResponse from "../../utils/to-user-response.js";
+import { User } from "@prisma/client";
 
-export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
+function toAuthResponse(user: User, accesToken: string, refreshToken: string) {
+  return {
+    tokens: {
+      accessToken: accesToken,
+      refreshToken: refreshToken,
+    },
+    user: {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    },
+  };
+}
+
+export async function login(loginDto: LoginDto): Promise<AuthResponseDto> {
   const user = await userRepository.findByEmail(loginDto.email);
   if (!user) throw new NotFoundError(`User with email : ${loginDto.email}`);
 
@@ -38,7 +55,7 @@ export async function login(loginDto: LoginDto): Promise<TokenResponseDto> {
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
   });
 
-  return { accessToken, refreshToken };
+  return toAuthResponse(user, accessToken, refreshToken);
 }
 
 export async function logout(refreshToken: string): Promise<string> {
@@ -54,7 +71,7 @@ export async function logout(refreshToken: string): Promise<string> {
 
 export async function register(
   createUserDto: RegisterDto,
-): Promise<RegisterResponseDto> {
+): Promise<AuthResponseDto> {
   const existingUser = await userRepository.findByEmail(createUserDto.email);
   if (existingUser)
     throw new ConflictError(
@@ -92,7 +109,7 @@ export async function register(
     },
   };
 
-  return userRegisterResponse;
+  return toAuthResponse(createdUser, accessToken, refreshToken);
 }
 
 export async function getProfile(userId: string) {
