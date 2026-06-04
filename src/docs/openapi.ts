@@ -122,6 +122,7 @@ registry.registerPath({ method: "patch", path: "/users/{id}/deactivate", tags: [
 registry.registerPath({ method: "patch", path: "/users/{id}", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { params: idParam, body: { content: { "application/json": { schema: UpdateUserByAdminSchema } } } }, responses: { 200: jsonResponse(userSchema, "User updated"), ...errorResponses } });
 
 registry.registerPath({ method: "get", path: "/events", tags: ["Events"], request: { query: EventFiltersSchema }, responses: { 200: jsonResponse(paginatedSchema(eventSchema), "Events retrieved"), ...errorResponses } });
+registry.registerPath({ method: "get", path: "/events/{id}", tags: ["Events"], request: { params: idParam}, responses: { 200: jsonResponse(eventSchema, "Event retrieved"), ...errorResponses } });
 registry.registerPath({ method: "post", path: "/events", tags: ["Events"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: CreateEventSchema } } } }, responses: { 201: jsonResponse(eventSchema, "Event created"), ...errorResponses } });
 registry.registerPath({ method: "patch", path: "/events/{id}/status", tags: ["Events"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: idParam, body: { content: { "application/json": { schema: UpdateEventStatusSchema } } } }, responses: { 200: jsonResponse(eventSchema, "Event status updated"), ...errorResponses } });
 
