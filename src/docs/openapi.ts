@@ -1,6 +1,13 @@
-import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
+import {
+  OpenAPIRegistry,
+  OpenApiGeneratorV3,
+} from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { LoginSchema, RefreshTokensSchema, RegisterSchema } from "../modules/auth/auth.dto.js";
+import {
+  LoginSchema,
+  RefreshTokensSchema,
+  RegisterSchema,
+} from "../modules/auth/auth.dto.js";
 import {
   CreateUserSchema,
   UpdateUserByAdminSchema,
@@ -33,9 +40,15 @@ registry.registerComponent("securitySchemes", "bearerAuth", {
 
 const idParam = z.object({ id: z.string().uuid() });
 const eventIdParam = z.object({ eventId: z.string().uuid() });
-const eventIdAndIdParams = z.object({ eventId: z.string().uuid(), id: z.string().uuid() });
+const eventIdAndIdParams = z.object({
+  eventId: z.string().uuid(),
+  id: z.string().uuid(),
+});
 
-const tokenResponseSchema = z.object({ accessToken: z.string(), refreshToken: z.string() });
+const tokenResponseSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
 const messageSchema = z.object({ message: z.string() });
 const userSchema = z.object({
   id: z.string().uuid(),
@@ -45,7 +58,11 @@ const userSchema = z.object({
   createdAt: z.string().datetime().or(z.date()),
   role: z.enum(["USER", "ORGANIZER", "ADMIN"]),
 });
-const categorySchema = z.object({ id: z.string().uuid(), name: z.string(), slug: z.string() });
+const categorySchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  slug: z.string(),
+});
 const ticketTypeSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
@@ -69,7 +86,12 @@ const eventSchema = z.object({
   createdAt: z.string().datetime().or(z.date()),
   updatedAt: z.string().datetime().or(z.date()),
   category: categorySchema,
-  organizer: userSchema.pick({ id: true, email: true, firstName: true, lastName: true }),
+  organizer: userSchema.pick({
+    id: true,
+    email: true,
+    firstName: true,
+    lastName: true,
+  }),
   ticketTypes: z.array(ticketTypeSchema),
 });
 
@@ -94,52 +116,415 @@ const bookingSchema = z.object({
 });
 
 const paginatedSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
-  z.object({ data: z.array(itemSchema), meta: z.object({ page: z.number(), limit: z.number(), total: z.number() }).partial() });
+  z.object({
+    data: z.array(itemSchema),
+    meta: z
+      .object({ page: z.number(), limit: z.number(), total: z.number() })
+      .partial(),
+  });
 
-const errorBodySchema = z.object({ message: z.string(), errors: z.unknown().optional() });
+const errorBodySchema = z.object({
+  message: z.string(),
+  errors: z.unknown().optional(),
+});
 const errorResponses = {
-  400: { description: "Validation error", content: { "application/json": { schema: errorBodySchema } } },
-  401: { description: "Authentication required", content: { "application/json": { schema: errorBodySchema } } },
-  403: { description: "Forbidden", content: { "application/json": { schema: errorBodySchema } } },
-  404: { description: "Resource not found", content: { "application/json": { schema: errorBodySchema } } },
-  409: { description: "Conflict", content: { "application/json": { schema: errorBodySchema } } },
-  500: { description: "Internal server error", content: { "application/json": { schema: errorBodySchema } } },
+  400: {
+    description: "Validation error",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
+  401: {
+    description: "Authentication required",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
+  403: {
+    description: "Forbidden",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
+  404: {
+    description: "Resource not found",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
+  409: {
+    description: "Conflict",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
+  500: {
+    description: "Internal server error",
+    content: { "application/json": { schema: errorBodySchema } },
+  },
 };
-const jsonResponse = (schema: z.ZodTypeAny, description: string) => ({ description, content: { "application/json": { schema } } });
+const jsonResponse = (schema: z.ZodTypeAny, description: string) => ({
+  description,
+  content: { "application/json": { schema } },
+});
 
-registry.registerPath({ method: "post", path: "/auth/login", tags: ["Auth"], request: { body: { content: { "application/json": { schema: LoginSchema } } } }, responses: { 200: jsonResponse(tokenResponseSchema, "Login successful"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/auth/logout", tags: ["Auth"], security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: RefreshTokensSchema } } } }, responses: { 200: jsonResponse(messageSchema, "Logout successful"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/auth/register", tags: ["Auth"], request: { body: { content: { "application/json": { schema: RegisterSchema } } } }, responses: { 201: jsonResponse(z.object({ data: userSchema.pick({ email: true, firstName: true, lastName: true }), tokens: tokenResponseSchema }), "Registration successful"), ...errorResponses } });
-registry.registerPath({ method: "get", path: "/auth/me", tags: ["Auth"], security: [{ bearerAuth: [] }], responses: { 200: jsonResponse(userSchema, "Current user profile"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/auth/refresh-tokens", tags: ["Auth"], request: { body: { content: { "application/json": { schema: RefreshTokensSchema } } } }, responses: { 200: jsonResponse(tokenResponseSchema, "Token refreshed"), ...errorResponses } });
+registry.registerPath({
+  method: "post",
+  path: "/auth/login",
+  tags: ["Auth"],
+  request: {
+    body: { content: { "application/json": { schema: LoginSchema } } },
+  },
+  responses: {
+    200: jsonResponse(tokenResponseSchema, "Login successful"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/auth/logout",
+  tags: ["Auth"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { "application/json": { schema: RefreshTokensSchema } } },
+  },
+  responses: {
+    200: jsonResponse(messageSchema, "Logout successful"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/auth/register",
+  tags: ["Auth"],
+  request: {
+    body: { content: { "application/json": { schema: RegisterSchema } } },
+  },
+  responses: {
+    201: jsonResponse(
+      z.object({
+        data: userSchema.pick({ email: true, firstName: true, lastName: true }),
+        tokens: tokenResponseSchema,
+      }),
+      "Registration successful",
+    ),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
+  path: "/auth/me",
+  tags: ["Auth"],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: jsonResponse(userSchema, "Current user profile"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/auth/refresh-tokens",
+  tags: ["Auth"],
+  request: {
+    body: { content: { "application/json": { schema: RefreshTokensSchema } } },
+  },
+  responses: {
+    200: jsonResponse(tokenResponseSchema, "Token refreshed"),
+    ...errorResponses,
+  },
+});
 
-registry.registerPath({ method: "get", path: "/users", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { query: UserFiltersSchema }, responses: { 200: jsonResponse(paginatedSchema(userSchema), "Users retrieved"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/users/me", tags: ["Users"], security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: UpdateUserSchema } } } }, responses: { 200: jsonResponse(userSchema, "User profile updated"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/users/me/to-organizer", tags: ["Users"], description: "Requires USER role.", security: [{ bearerAuth: [] }], responses: { 200: jsonResponse(z.object({ organizer: userSchema, message: z.string() }), "Role changed to ORGANIZER"), ...errorResponses } });
-registry.registerPath({ method: "get", path: "/users/{id}", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { params: idParam }, responses: { 200: jsonResponse(userSchema, "User found"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/users", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: CreateUserSchema } } } }, responses: { 201: jsonResponse(userSchema, "User created"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/users/{id}/deactivate", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { params: idParam }, responses: { 200: jsonResponse(userSchema, "User deactivated"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/users/{id}", tags: ["Users"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { params: idParam, body: { content: { "application/json": { schema: UpdateUserByAdminSchema } } } }, responses: { 200: jsonResponse(userSchema, "User updated"), ...errorResponses } });
+registry.registerPath({
+  method: "get",
+  path: "/users",
+  tags: ["Users"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: { query: UserFiltersSchema },
+  responses: {
+    200: jsonResponse(paginatedSchema(userSchema), "Users retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/users/me",
+  tags: ["Users"],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { "application/json": { schema: UpdateUserSchema } } },
+  },
+  responses: {
+    200: jsonResponse(userSchema, "User profile updated"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/users/me/to-organizer",
+  tags: ["Users"],
+  description: "Requires USER role.",
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: jsonResponse(
+      z.object({ organizer: userSchema, message: z.string() }),
+      "Role changed to ORGANIZER",
+    ),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
+  path: "/users/{id}",
+  tags: ["Users"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: { params: idParam },
+  responses: { 200: jsonResponse(userSchema, "User found"), ...errorResponses },
+});
+registry.registerPath({
+  method: "post",
+  path: "/users",
+  tags: ["Users"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { "application/json": { schema: CreateUserSchema } } },
+  },
+  responses: {
+    201: jsonResponse(userSchema, "User created"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/users/{id}/deactivate",
+  tags: ["Users"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: { params: idParam },
+  responses: {
+    200: jsonResponse(userSchema, "User deactivated"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/users/{id}",
+  tags: ["Users"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: idParam,
+    body: {
+      content: { "application/json": { schema: UpdateUserByAdminSchema } },
+    },
+  },
+  responses: {
+    200: jsonResponse(userSchema, "User updated"),
+    ...errorResponses,
+  },
+});
 
-registry.registerPath({ method: "get", path: "/events", tags: ["Events"], request: { query: EventFiltersSchema }, responses: { 200: jsonResponse(paginatedSchema(eventSchema), "Events retrieved"), ...errorResponses } });
-registry.registerPath({ method: "get", path: "/events/{id}", tags: ["Events"], request: { params: idParam}, responses: { 200: jsonResponse(eventSchema, "Event retrieved"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/events", tags: ["Events"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: CreateEventSchema } } } }, responses: { 201: jsonResponse(eventSchema, "Event created"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/events/{id}/status", tags: ["Events"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: idParam, body: { content: { "application/json": { schema: UpdateEventStatusSchema } } } }, responses: { 200: jsonResponse(eventSchema, "Event status updated"), ...errorResponses } });
+registry.registerPath({
+  method: "get",
+  path: "/events",
+  tags: ["Events"],
+  request: { query: EventFiltersSchema },
+  responses: {
+    200: jsonResponse(paginatedSchema(eventSchema), "Events retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
+  path: "/events/{id}",
+  tags: ["Events"],
+  request: { params: idParam },
+  responses: {
+    200: jsonResponse(eventSchema, "Event retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/events",
+  tags: ["Events"],
+  description: "Requires ADMIN or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { "application/json": { schema: CreateEventSchema } } },
+  },
+  responses: {
+    201: jsonResponse(eventSchema, "Event created"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/events/{id}/status",
+  tags: ["Events"],
+  description: "Requires ADMIN or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: idParam,
+    body: {
+      content: { "application/json": { schema: UpdateEventStatusSchema } },
+    },
+  },
+  responses: {
+    200: jsonResponse(eventSchema, "Event status updated"),
+    ...errorResponses,
+  },
+});
 
-registry.registerPath({ method: "get", path: "/events/{eventId}/ticket-types", tags: ["TicketTypes"], request: { params: eventIdParam }, responses: { 200: jsonResponse(z.array(ticketTypeSchema), "Ticket types retrieved"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/events/{eventId}/ticket-types", tags: ["TicketTypes"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: eventIdParam, body: { content: { "application/json": { schema: CreateTicketTypeSchema } } } }, responses: { 201: jsonResponse(ticketTypeSchema, "Ticket type created"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/events/{eventId}/ticket-types/{id}", tags: ["TicketTypes"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: eventIdAndIdParams, body: { content: { "application/json": { schema: UpdateTicketTypeSchema } } } }, responses: { 200: jsonResponse(ticketTypeSchema, "Ticket type updated"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/events/{eventId}/ticket-types/{id}/deactivate", tags: ["TicketTypes"], description: "Requires ADMIN or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: eventIdAndIdParams }, responses: { 200: jsonResponse(ticketTypeSchema, "Ticket type deactivated"), ...errorResponses } });
+registry.registerPath({
+  method: "get",
+  path: "/events/{eventId}/ticket-types",
+  tags: ["TicketTypes"],
+  request: { params: eventIdParam },
+  responses: {
+    200: jsonResponse(z.array(ticketTypeSchema), "Ticket types retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/events/{eventId}/ticket-types",
+  tags: ["TicketTypes"],
+  description: "Requires ADMIN or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: eventIdParam,
+    body: {
+      content: { "application/json": { schema: CreateTicketTypeSchema } },
+    },
+  },
+  responses: {
+    201: jsonResponse(ticketTypeSchema, "Ticket type created"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/events/{eventId}/ticket-types/{id}",
+  tags: ["TicketTypes"],
+  description: "Requires ADMIN or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: eventIdAndIdParams,
+    body: {
+      content: { "application/json": { schema: UpdateTicketTypeSchema } },
+    },
+  },
+  responses: {
+    200: jsonResponse(ticketTypeSchema, "Ticket type updated"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/events/{eventId}/ticket-types/{id}/deactivate",
+  tags: ["TicketTypes"],
+  description: "Requires ADMIN or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: { params: eventIdAndIdParams },
+  responses: {
+    200: jsonResponse(ticketTypeSchema, "Ticket type deactivated"),
+    ...errorResponses,
+  },
+});
 
-registry.registerPath({ method: "get", path: "/event-categories", tags: ["Categories"], responses: { 200: jsonResponse(paginatedSchema(categorySchema), "Categories retrieved"), ...errorResponses } });
-registry.registerPath({ method: "get", path: "/event-categories/{id}", tags: ["Categories"], request: { params: idParam }, responses: { 200: jsonResponse(categorySchema, "Category found"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/event-categories", tags: ["Categories"], description: "Requires ADMIN role.", security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: CreateEventCategorySchema } } } }, responses: { 201: jsonResponse(categorySchema, "Category created"), ...errorResponses } });
+registry.registerPath({
+  method: "get",
+  path: "/event-categories",
+  tags: ["Categories"],
+  responses: {
+    200: jsonResponse(paginatedSchema(categorySchema), "Categories retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
+  path: "/event-categories/{id}",
+  tags: ["Categories"],
+  request: { params: idParam },
+  responses: {
+    200: jsonResponse(categorySchema, "Category found"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/event-categories",
+  tags: ["Categories"],
+  description: "Requires ADMIN role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      content: { "application/json": { schema: CreateEventCategorySchema } },
+    },
+  },
+  responses: {
+    201: jsonResponse(categorySchema, "Category created"),
+    ...errorResponses,
+  },
+});
 
-registry.registerPath({ method: "get", path: "/bookings", tags: ["Bookings"], security: [{ bearerAuth: [] }], request: { query: BookingFiltersSchema }, responses: { 200: jsonResponse(paginatedSchema(bookingSchema), "Bookings retrieved"), ...errorResponses } });
-registry.registerPath({ method: "get", path: "/bookings/{id}", tags: ["Bookings"], security: [{ bearerAuth: [] }], request: { params: idParam }, responses: { 200: jsonResponse(bookingSchema, "Booking found"), ...errorResponses } });
-registry.registerPath({ method: "post", path: "/bookings", tags: ["Bookings"], description: "Requires USER or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { body: { content: { "application/json": { schema: CreateBookingSchema } } } }, responses: { 201: jsonResponse(bookingSchema, "Booking created"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/bookings/{id}/cancel", tags: ["Bookings"], security: [{ bearerAuth: [] }], request: { params: idParam }, responses: { 200: jsonResponse(bookingSchema, "Booking cancelled"), ...errorResponses } });
-registry.registerPath({ method: "patch", path: "/bookings/{id}", tags: ["Bookings"], description: "Requires USER or ORGANIZER role.", security: [{ bearerAuth: [] }], request: { params: idParam, body: { content: { "application/json": { schema: UpdateBookingItemSchema } } } }, responses: { 200: jsonResponse(bookingSchema, "Booking item updated"), ...errorResponses } });
+registry.registerPath({
+  method: "get",
+  path: "/bookings",
+  tags: ["Bookings"],
+  security: [{ bearerAuth: [] }],
+  request: { query: BookingFiltersSchema },
+  responses: {
+    200: jsonResponse(paginatedSchema(bookingSchema), "Bookings retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
+  path: "/bookings/{id}",
+  tags: ["Bookings"],
+  security: [{ bearerAuth: [] }],
+  request: { params: idParam },
+  responses: {
+    200: jsonResponse(bookingSchema, "Booking found"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "post",
+  path: "/bookings",
+  tags: ["Bookings"],
+  description: "Requires USER or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: { content: { "application/json": { schema: CreateBookingSchema } } },
+  },
+  responses: {
+    201: jsonResponse(bookingSchema, "Booking created"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/bookings/{id}/cancel",
+  tags: ["Bookings"],
+  security: [{ bearerAuth: [] }],
+  request: { params: idParam },
+  responses: {
+    200: jsonResponse(bookingSchema, "Booking cancelled"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "patch",
+  path: "/bookings/{id}",
+  tags: ["Bookings"],
+  description: "Requires USER or ORGANIZER role.",
+  security: [{ bearerAuth: [] }],
+  request: {
+    params: idParam,
+    body: {
+      content: { "application/json": { schema: UpdateBookingItemSchema } },
+    },
+  },
+  responses: {
+    200: jsonResponse(bookingSchema, "Booking item updated"),
+    ...errorResponses,
+  },
+});
 
 export function generateOpenApiDoc(): Record<string, unknown> {
   const generator = new OpenApiGeneratorV3(registry.definitions);
