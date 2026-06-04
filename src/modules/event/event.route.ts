@@ -2,11 +2,13 @@ import { Router } from "express";
 import * as eventController from "./event.controller.js";
 import {
   validateBody,
+  validatePathParams,
   validateQueryParams,
 } from "../../middlewares/validate.js";
 import {
   CreateEventSchema,
   EventFiltersSchema,
+  EventIdParams,
   UpdateEventStatusSchema,
 } from "./event.dto.js";
 import authenticate from "../../middlewares/authenticate.js";
@@ -21,6 +23,13 @@ eventRoutes.get(
   authenticateOptional,
   validateQueryParams(EventFiltersSchema),
   eventController.findAll,
+);
+
+eventRoutes.get(
+  "/:id",
+  authenticateOptional,
+  validatePathParams(EventIdParams),
+  eventController.findById,
 );
 
 eventRoutes.post(
