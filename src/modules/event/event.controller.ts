@@ -14,6 +14,21 @@ export async function findAll(req: Request, res: Response, next: NextFunction) {
   }
 }
 
+export async function findById(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const eventId = req.params.id;
+
+    const event = await eventService.findById(eventId);
+    res.status(200).json(event);
+  } catch (e) {
+    next(e);
+  }
+}
+
 export async function create(req: Request, res: Response, next: NextFunction) {
   try {
     const organizerId = req.user?.userId as string;

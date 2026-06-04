@@ -66,6 +66,13 @@ export async function findAll(
   return events.map(toEventResponse);
 }
 
+export async function findById(eventId: string) {
+  const event = await eventRepository.findById(eventId);
+  if (!event) throw new NotFoundError(`event with id : ${eventId}`);
+
+  return toEventResponse(event);
+}
+
 export async function create(
   organizerId: string,
   createEventDto: CreateEventDto,

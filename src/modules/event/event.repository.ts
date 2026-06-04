@@ -108,6 +108,7 @@ export async function findById(eventId: string) {
     where: {
       id: eventId,
     },
+    include: eventWithRelations.include,
   });
 }
 

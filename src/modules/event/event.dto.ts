@@ -33,6 +33,10 @@ export const EventFiltersSchema = z.object({
   sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });
 
+export const EventIdParams = z.object({
+  id: z.uuid(),
+});
+
 export type CreateEventDto = z.infer<typeof CreateEventSchema>;
 export type UpdateEventStatusDto = z.infer<typeof UpdateEventStatusSchema>;
 export type EventFiltersDto = z.infer<typeof EventFiltersSchema>;
