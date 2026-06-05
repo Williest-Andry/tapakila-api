@@ -472,6 +472,16 @@ registry.registerPath({
 });
 registry.registerPath({
   method: "get",
+  path: "/bookings/me",
+  tags: ["Bookings"],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: jsonResponse(paginatedSchema(bookingSchema), "My Bookings retrieved"),
+    ...errorResponses,
+  },
+});
+registry.registerPath({
+  method: "get",
   path: "/bookings/{id}",
   tags: ["Bookings"],
   security: [{ bearerAuth: [] }],
