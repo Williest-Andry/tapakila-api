@@ -16,6 +16,7 @@ import {
 import { BookingWithRelations } from "./booking.repository.js";
 import { Prisma } from "@prisma/client";
 import AppError from "../../utils/AppError.js";
+import { JwtPayload } from "../../config/jwt.js";
 
 function toBookingResponse(booking: BookingWithRelations): BookingResponseDto {
   const items = booking.bookingItems.map((item) => ({
@@ -305,4 +306,10 @@ export async function updateItem(
   );
 
   return toBookingResponse(updated);
+}
+
+export async function findByMe(me: JwtPayload) {
+  const bookings = await bookingRepository.findByUserId(me.userId);
+
+  return bookings.map(toBookingResponse);
 }

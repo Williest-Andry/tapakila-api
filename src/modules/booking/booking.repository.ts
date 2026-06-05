@@ -105,3 +105,12 @@ export async function countUserTicketsForType(
 
   return result._sum.quantity ?? 0;
 }
+
+export async function findByUserId(userId: string) {
+  return await prisma.booking.findMany({
+    where: {
+      userId: userId,
+    },
+    include: bookingWithRelations.include,
+  });
+}
