@@ -73,3 +73,16 @@ export async function updateItem(
     next(e);
   }
 }
+
+export async function findByMe(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const bookings = await bookingService.findByMe(req.user!);
+    res.status(200).json(bookings);
+  } catch (e) {
+    next(e);
+  }
+}

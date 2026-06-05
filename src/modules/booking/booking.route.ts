@@ -18,11 +18,18 @@ bookingRoutes.use(authenticate);
 
 bookingRoutes.get(
   "/",
+  authorize("ADMIN"),
   validateQueryParams(BookingFiltersSchema),
   bookingController.findAll,
 );
 
-bookingRoutes.get("/:id", bookingController.findById);
+bookingRoutes.get(
+  "/me",
+  authorize("USER", "ORGANIZER"),
+  bookingController.findByMe,
+);
+
+bookingRoutes.get("/:id", authorize("ADMIN"), bookingController.findById);
 
 bookingRoutes.post(
   "/",
@@ -35,7 +42,7 @@ bookingRoutes.patch("/:id/cancel", bookingController.cancel);
 
 bookingRoutes.patch(
   "/:id",
-  authorize("USER", "ORGANIZER"),
+  authorize("ADMIN"),
   validateBody(UpdateBookingItemSchema),
   bookingController.updateItem,
 );
