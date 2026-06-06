@@ -516,23 +516,6 @@ registry.registerPath({
     ...errorResponses,
   },
 });
-registry.registerPath({
-  method: "patch",
-  path: "/bookings/{id}",
-  tags: ["Bookings"],
-  description: "Requires USER or ORGANIZER role.",
-  security: [{ bearerAuth: [] }],
-  request: {
-    params: idParam,
-    body: {
-      content: { "application/json": { schema: UpdateBookingItemSchema } },
-    },
-  },
-  responses: {
-    200: jsonResponse(bookingSchema, "Booking item updated"),
-    ...errorResponses,
-  },
-});
 
 export function generateOpenApiDoc(): Record<string, unknown> {
   const generator = new OpenApiGeneratorV3(registry.definitions);
