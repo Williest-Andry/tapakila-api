@@ -40,11 +40,4 @@ bookingRoutes.post(
 
 bookingRoutes.patch("/:id/cancel", bookingController.cancel);
 
-bookingRoutes.patch(
-  "/:id",
-  authorize("ADMIN"),
-  validateBody(UpdateBookingItemSchema),
-  bookingController.updateItem,
-);
-
 export default bookingRoutes;

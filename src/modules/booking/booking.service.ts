@@ -90,110 +90,97 @@ export async function create(
     throw new BadRequestError("Event is not available for booking");
   }
 
-  try {
-    const booking = await prisma.$transaction(
-      async (tx: Prisma.TransactionClient) => {
-        const bookingItemsData: {
-          ticketTypeId: string;
-          quantity: number;
-          unitPrice: number;
-        }[] = [];
+  const booking = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const bookingItemsData: {
+        ticketTypeId: string;
+        quantity: number;
+        unitPrice: number;
+      }[] = [];
 
-        for (const item of dto.items) {
-          const ticketType = await tx.ticketType.findUnique({
-            where: { id: item.ticketTypeId },
-          });
+      for (const item of dto.items) {
+        const ticketType = await tx.ticketType.findUnique({
+          where: { id: item.ticketTypeId },
+        });
 
-          if (!ticketType) {
-            throw new NotFoundError(`TicketType with id ${item.ticketTypeId}`);
-          }
-          if (ticketType.eventId !== dto.eventId) {
-            throw new BadRequestError(
-              `TicketType ${item.ticketTypeId} does not belong to this event`,
-            );
-          }
-          if (!ticketType.isActive) {
-            throw new BadRequestError(
-              `Ticket type "${ticketType.name}" is no longer available`,
-            );
-          }
-
-          const alreadyBooked = await bookingRepository.countUserTicketsForType(
-            userId,
-            item.ticketTypeId,
+        if (!ticketType) {
+          throw new NotFoundError(`TicketType with id ${item.ticketTypeId}`);
+        }
+        if (ticketType.eventId !== dto.eventId) {
+          throw new BadRequestError(
+            `TicketType ${item.ticketTypeId} does not belong to this event`,
           );
-          if (alreadyBooked + item.quantity > ticketType.maxPerUser) {
-            throw new BadRequestError(
-              `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
-            );
-          }
-
-          const bookedSeats = await tx.bookingItem.aggregate({
-            where: {
-              ticketTypeId: item.ticketTypeId,
-              booking: { status: "CONFIRMED" },
-            },
-            _sum: { quantity: true },
-          });
-          const availableSeats =
-            ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
-          if (availableSeats < item.quantity) {
-            throw new BadRequestError(
-              `Not enough seats for ticket type "${ticketType.name}" (${availableSeats} remaining)`,
-            );
-          }
-
-          bookingItemsData.push({
-            ticketTypeId: item.ticketTypeId,
-            quantity: item.quantity,
-            unitPrice: Number(ticketType.price),
-          });
+        }
+        if (!ticketType.isActive) {
+          throw new BadRequestError(
+            `Ticket type "${ticketType.name}" is no longer available`,
+          );
         }
 
-        return await tx.booking.create({
-          data: {
-            userId,
-            eventId: dto.eventId,
-            status: "CONFIRMED",
-            bookingItems: {
-              create: bookingItemsData.map((item) => ({
-                ticketTypeId: item.ticketTypeId,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-              })),
-            },
+        const alreadyBooked = await bookingRepository.countUserTicketsForType(
+          userId,
+          item.ticketTypeId,
+        );
+        if (alreadyBooked + item.quantity > ticketType.maxPerUser) {
+          throw new BadRequestError(
+            `Maximum ${ticketType.maxPerUser} tickets of type "${ticketType.name}" per user`,
+          );
+        }
+
+        const bookedSeats = await tx.bookingItem.aggregate({
+          where: {
+            ticketTypeId: item.ticketTypeId,
+            booking: { status: "CONFIRMED" },
           },
-          include: {
-            event: { select: { id: true, title: true, eventDate: true } },
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
-            bookingItems: {
-              include: { ticketType: { select: { id: true, name: true } } },
-            },
-          },
+          _sum: { quantity: true },
         });
-      },
-    );
+        const availableSeats =
+          ticketType.totalSeats - (bookedSeats._sum.quantity ?? 0);
+        if (availableSeats < item.quantity) {
+          throw new BadRequestError(
+            `Not enough seats for ticket type "${ticketType.name}" (${availableSeats} remaining)`,
+          );
+        }
 
-    return toBookingResponse(booking);
-  } catch (e: unknown) {
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === "P2002"
-    ) {
-      throw new ConflictError(
-        "You already made a booking for this event. Modify the booking quantity instead. This booking",
-      );
-    }
+        bookingItemsData.push({
+          ticketTypeId: item.ticketTypeId,
+          quantity: item.quantity,
+          unitPrice: Number(ticketType.price),
+        });
+      }
 
-    throw new AppError("Unexpected internal error", 500);
-  }
+      return await tx.booking.create({
+        data: {
+          userId,
+          eventId: dto.eventId,
+          status: "CONFIRMED",
+          bookingItems: {
+            create: bookingItemsData.map((item) => ({
+              ticketTypeId: item.ticketTypeId,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+            })),
+          },
+        },
+        include: {
+          event: { select: { id: true, title: true, eventDate: true } },
+          user: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          bookingItems: {
+            include: { ticketType: { select: { id: true, name: true } } },
+          },
+        },
+      });
+    },
+  );
+
+  return toBookingResponse(booking);
 }
 
 export async function cancel(

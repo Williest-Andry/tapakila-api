@@ -110,8 +110,6 @@ model Booking {
   event   Event  @relation(fields: [eventId], references: [id])
 
   bookingItems BookingItem[]
-
-  @@unique([userId, eventId])
 }
 
 model BookingItem {
